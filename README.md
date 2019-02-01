@@ -18,6 +18,7 @@ plugins:
 Define something to setting of AWS services you want to integrate with under `custom > apiGatewayServiceProxy` and run `serverless deploy`.
 
 ### Kinesis
+Here is syntax for Kinesis proxy in serverless.yml.
 ```yaml
 custom:
   apiGatewayServiceProxy:
@@ -34,3 +35,11 @@ resources:
       Properties:
         ShardCount: 1
 ```
+
+Here is sample request after deploying.
+```
+curl -XPOST https://xxxxxxx.execute-api.us-east-1.amazonaws.com/dev/kinesis -d '{"Data": "some data","PartitionKey": "some key"}'  -H 'Content-Type:application/json'
+
+```
+
+
