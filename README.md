@@ -8,5 +8,6 @@ Define something to setting of AWS services you want to integrate with under `cu
 ```yaml
 custom:
   apiGatewayServiceProxy:
-    path: /kinesis/{streamname}
+    - kinesis:
+        path: /kinesis/{streamname}
 ```
