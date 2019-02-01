@@ -1,7 +1,7 @@
 ![serverless](http://public.serverless.com/badges/v3.svg)
 
 # Serverless ApiGateway Service Proxy(BETA)
-The Serverless Framewrok plugin to support AWS service proxy integration of API Gateway. You can connect directly API Gateway with AWS services without Lambda. Currently, support only kinesis stream but will expend the other services.
+This Serverless Framewrok plugin supports the AWS service proxy integration feature of API Gateway. You can directly connect API Gateway to AWS services without Lambda. Currently, the plugin only supports Kinesis streams but will expand to other services.
 
 ## Install
 Run `npm install` in your Serverless project.
@@ -17,7 +17,7 @@ plugins:
 ```
 
 ## How to use
-Define something to setting of AWS services you want to integrate with under `custom > apiGatewayServiceProxy` and run `serverless deploy`.
+Define settings of the AWS services you want to integrate under `custom > apiGatewayServiceProxy` and run `serverless deploy`.
 
 ### Kinesis
 Here is syntax for Kinesis proxy in serverless.yml.
@@ -38,7 +38,7 @@ resources:
         ShardCount: 1
 ```
 
-Here is sample request after deploying.
+Here is a sample request after deploying.
 ```
 curl -XPOST https://xxxxxxx.execute-api.us-east-1.amazonaws.com/dev/kinesis -d '{"Data": "some data","PartitionKey": "some key"}'  -H 'Content-Type:application/json'
 
