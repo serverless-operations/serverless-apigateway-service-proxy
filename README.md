@@ -17,7 +17,7 @@ plugins:
 ```
 
 ## Supported AWS services
-Here is a services list which this plugin supports for now. But will expand to other services in the feature.
+Here is a services list which this plugin supports for now and will expand to other services in the feature.
 Please pull request if you are intersted in it.
 
 - Kinesis Streams
