@@ -27,7 +27,7 @@ Please pull request if you are intersted in it.
 Define settings of the AWS services you want to integrate under `custom > apiGatewayServiceProxy` and run `serverless deploy`.
 
 ### Kinesis
-Here is syntax for Kinesis proxy in serverless.yml.
+Sample syntax for Kinesis proxy in serverless.yml.
 ```yaml
 custom:
   apiGatewayServiceProxy:
@@ -45,13 +45,14 @@ resources:
         ShardCount: 1
 ```
 
-Here is a sample request after deploying.
+Sample request after deploying.
 ```
 curl -XPOST https://xxxxxxx.execute-api.us-east-1.amazonaws.com/dev/kinesis -d '{"Data": "some data","PartitionKey": "some key"}'  -H 'Content-Type:application/json'
 ```
 
 ### SQS
-Here is syntax for SQS proxy in serverless.yml.
+
+Sample syntax for SQS proxy in serverless.yml.
 ```yaml
 custom:
   apiGatewayServiceProxy:
@@ -67,7 +68,7 @@ resources:
       Type: "AWS::SQS::Queue"
 ```
 
-Here is a sample request after deploying.
+Sample request after deploying.
 ```
 curl -XPOST https://xxxxxx.execute-api.us-east-1.amazonaws.com/dev/sqs -d '{"message": "testtest"}' -H 'Content-Type:application/json'
 ```
