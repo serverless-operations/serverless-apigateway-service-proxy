@@ -4,16 +4,10 @@
 This Serverless Framewrok plugin supports the AWS service proxy integration feature of API Gateway. You can directly connect API Gateway to AWS services without Lambda.
 
 ## Install
-Run `npm install` in your Serverless project.
+Run `servelress plugin install` in your Serverless project.
 
 ```
-$ npm install --save-dev serverless-apigateway-service-proxy
-```
-Add the plugin to your serverless.yml file
-
-```yaml
-plugins:
-  - serverless-apigateway-service-proxy
+$ serverless plugin install -n serverless-apigateway-service-proxy
 ```
 
 ## Supported AWS services
