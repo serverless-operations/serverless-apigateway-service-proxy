@@ -5,7 +5,8 @@
   "main": "lib/index.js",
   "scripts": {
     "lint": "eslint .",
-    "test": "jest tests.js",
+    "test": "istanbul cover -x '**/*.test.js' node_modules/mocha/bin/_mocha '!(node_modules)/**/*.test.js' -- -R spec --recursive",
+    "coverage": "nyc --reporter=lcov --reporter=html --reporter=text-summary npm test",
     "fmt": "eslint . --fix --cache",
     "precommit": "lint-staged"
   },
@@ -15,20 +16,23 @@
       "git add"
     ]
   },
-  "devDependencies": {
-    "chai": "^4.2.0",
-    "eslint": "^5.8.0",
-    "eslint-config-prettier": "^3.1.0",
-    "eslint-plugin-import": "^2.14.0",
-    "eslint-plugin-prettier": "^3.0.0",
-    "husky": "^1.1.3",
-    "jest": "^23.6.0",
-    "lint-staged": "^8.0.4",
-    "prettier": "1.14.3"
-  },
   "dependencies": {
-    "serverless": "^1.36.3"
+    "serverless": "^1.48.2"
   },
   "author": "horike37",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "eslint": "^6.0.1",
+    "eslint-config-prettier": "^6.0.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-prettier": "^3.1.0",
+    "husky": "^3.0.1",
+    "istanbul": "^1.0.0-alpha.2",
+    "lint-staged": "^9.2.0",
+    "mocha": "^6.2.0",
+    "mocha-lcov-reporter": "^1.3.0",
+    "prettier": "^1.18.2"
+  }
 }
