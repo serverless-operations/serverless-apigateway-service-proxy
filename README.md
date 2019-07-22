@@ -67,3 +67,106 @@ Sample request after deploying.
 ```
 curl -XPOST https://xxxxxx.execute-api.us-east-1.amazonaws.com/dev/sqs -d '{"message": "testtest"}' -H 'Content-Type:application/json'
 ```
+
+## Common API Gateway features
+### Enabling CORS
+
+To set CORS configurations for your HTTP endpoints, simply modify your event configurations as follows:
+
+```yml
+custom:
+  apiGatewayServiceProxies:
+    - kinesis:
+        path: /kinesis
+        method: post
+        streamName: { Ref: 'YourStream' }
+        cors: true
+```
+
+Setting cors to true assumes a default configuration which is equivalent to:
+
+```yml
+custom:
+  apiGatewayServiceProxies:
+    - kinesis:
+        path: /kinesis
+        method: post
+        streamName: { Ref: 'YourStream' }
+        cors:
+          origin: '*'
+          headers:
+            - Content-Type
+            - X-Amz-Date
+            - Authorization
+            - X-Api-Key
+            - X-Amz-Security-Token
+            - X-Amz-User-Agent
+          allowCredentials: false
+```
+
+Configuring the cors property sets Access-Control-Allow-Origin, Access-Control-Allow-Headers, Access-Control-Allow-Methods,Access-Control-Allow-Credentials headers in the CORS preflight response.
+To enable the Access-Control-Max-Age preflight response header, set the maxAge property in the cors object:
+
+```yml
+custom:
+  apiGatewayServiceProxies:
+    - kinesis:
+        path: /kinesis
+        method: post
+        streamName: { Ref: 'YourStream' }
+        cors:
+          origin: '*'
+          maxAge: 86400
+```
+
+If you are using CloudFront or another CDN for your API Gateway, you may want to setup a Cache-Control header to allow for OPTIONS request to be cached to avoid the additional hop.
+
+To enable the Cache-Control header on preflight response, set the cacheControl property in the cors object:
+
+```yml
+custom:
+  apiGatewayServiceProxies:
+    - kinesis:
+        path: /kinesis
+        method: post
+        streamName: { Ref: 'YourStream' }
+        cors:
+          origin: '*'
+          headers:
+            - Content-Type
+            - X-Amz-Date
+            - Authorization
+            - X-Api-Key
+            - X-Amz-Security-Token
+            - X-Amz-User-Agent
+          allowCredentials: false
+          cacheControl: 'max-age=600, s-maxage=600, proxy-revalidate' # Caches on browser and proxy for 10 minutes and doesnt allow proxy to serve out of date content
+```
+
+### Customizing request body mapping templates
+
+If you'd like to add content types or customize the default templates, you can do so by including your custom [API Gateway request mapping template](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-mapping-template-reference.html) in `serverless.yml` like so:
+
+```yml
+custom:
+  apiGatewayServiceProxies:
+    - kinesis:
+        path: /kinesis
+        method: post
+        streamName: { Ref: 'MyStream' }
+        request:
+          template:
+            text/plain:
+              Fn::Sub:
+                - |
+                  #set($msgBody = $util.parseJson($input.body))
+                  #set($msgId = $msgBody.MessageId)
+                  {
+                      "Data": "$util.base64Encode($input.body)",
+                      "PartitionKey": "$msgId",
+                      "StreamName": "#{MyStreamArn}"
+                  }
+                - MyStreamArn:
+                    Fn::GetAtt: [MyStream, Arn]
+```
+Source: [How to connect SNS to Kinesis for cross-account delivery via API Gateway](https://theburningmonk.com/2019/07/how-to-connect-sns-to-kinesis-for-cross-account-delivery-via-api-gateway/)
