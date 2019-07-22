@@ -4,13 +4,12 @@ matrix:
   include:
     - node_js: '8.9'
     - node_js: '10.6'
+      env:
+        - INTEGRATION_TESTS=true
     - node_js: '10.6'
       env:
         - DISABLE_TESTS=true
         - LINTING=true
-    - node_js: '10.6'
-      env:
-        - INTEGRATION_TESTS=true
 
 sudo: false
 
