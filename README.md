@@ -169,3 +169,4 @@ custom:
                 - MyStreamArn:
                     Fn::GetAtt: [MyStream, Arn]
 ```
+Source: [How to connect SNS to Kinesis for cross-account delivery via API Gateway](https://theburningmonk.com/2019/07/how-to-connect-sns-to-kinesis-for-cross-account-delivery-via-api-gateway/)
