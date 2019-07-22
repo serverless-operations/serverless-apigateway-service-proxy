@@ -4,11 +4,11 @@ const expect = require('chai').expect
 const fetch = require('node-fetch')
 const { deployService, removeService, getApiGatewayEndpoint } = require('./../../utils')
 
-describe('AWS - API Gateway Integration Test', () => {
+describe('Kinesis Proxy Integration Test', () => {
   let endpoint
   let stackName
   let stage
-  const config = 'tests/integration/kinesis/service/serverless.yml'
+  const config = '__tests__/integration/kinesis/service/serverless.yml'
 
   beforeAll(async () => {
     stage = Math.random()

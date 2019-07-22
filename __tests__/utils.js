@@ -13,6 +13,7 @@ module.exports = {
       .OutputValue
     return endpointOutput.match(/https:\/\/.+\.execute-api\..+\.amazonaws\.com.+/)[0]
   },
+
   deployService(stage, config) {
     execSync(`npx serverless deploy --stage ${stage} --config ${config}`, {
       stdio: 'inherit'
@@ -21,9 +22,5 @@ module.exports = {
 
   removeService(stage, config) {
     execSync(`npx serverless remove --stage ${stage} --config ${config}`, { stdio: 'inherit' })
-  },
-
-  async sleep(second) {
-    await new Promise((r) => setTimeout(r, second))
   }
 }

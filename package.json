@@ -16,15 +16,6 @@
       "git add"
     ]
   },
-  "jest": {
-    "setupFilesAfterEnv": [
-      "<rootDir>/tests/setup-tests.js"
-    ],
-    "testEnvironment": "node",
-    "testRegex": "(\\.|/)(tests)\\.js$",
-    "testRunner": "jest-circus/runner",
-    "useStderr": true
-  },
   "dependencies": {
     "serverless": "^1.48.2"
   },
