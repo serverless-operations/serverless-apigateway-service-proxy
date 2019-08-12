@@ -7,13 +7,17 @@
     "lint": "eslint .",
     "integration-test": "jest --maxWorkers=5 integration",
     "test": "istanbul cover -x '**/*.test.js' node_modules/mocha/bin/_mocha '!(node_modules)/**/*.test.js' -- -R spec --recursive",
-    "fmt": "eslint . --fix --cache",
-    "precommit": "lint-staged"
+    "fmt": "eslint . --fix --cache"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
   },
   "lint-staged": {
     "*.js": [
-      "eslint . --fix --cache",
-      "git add"
+      "eslint"
     ]
   },
   "dependencies": {
@@ -22,6 +26,8 @@
   "author": "horike37",
   "license": "MIT",
   "devDependencies": {
+    "@commitlint/cli": "^8.1.0",
+    "@commitlint/config-conventional": "^8.1.0",
     "aws-sdk": "^2.496.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
