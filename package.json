@@ -24,6 +24,9 @@
   "dependencies": {
     "serverless": "^1.48.2"
   },
+  "publishConfig": {
+    "tag": "next"
+  },
   "author": "horike37",
   "license": "MIT",
   "devDependencies": {
