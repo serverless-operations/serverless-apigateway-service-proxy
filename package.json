@@ -7,6 +7,7 @@
     "lint": "eslint .",
     "integration-test": "jest --maxWorkers=5 integration",
     "test": "istanbul cover -x '**/*.test.js' node_modules/mocha/bin/_mocha '!(node_modules)/**/*.test.js' -- -R spec --recursive",
+    "test:watch": "_mocha '!(node_modules)/**/*.test.js' --watch",
     "fmt": "eslint . --fix --cache"
   },
   "husky": {
