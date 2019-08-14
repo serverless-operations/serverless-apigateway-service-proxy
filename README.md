@@ -214,3 +214,27 @@ custom:
 ```
 
 Source: [How to connect SNS to Kinesis for cross-account delivery via API Gateway](https://theburningmonk.com/2019/07/how-to-connect-sns-to-kinesis-for-cross-account-delivery-via-api-gateway/)
+
+### SQS
+
+#### Customizing request parameters
+
+If you'd like to pass additional data to the integration request, you can do so by including your custom [API Gateway request parameters](https://docs.aws.amazon.com/apigateway/latest/developerguide/request-response-data-mappings.html) in `serverless.yml` like so:
+
+```yml
+custom:
+  apiGatewayServiceProxies:
+    - sqs:
+        path: /queue
+        method: post
+        queueName: !GetAtt MyQueue.QueueName
+        cors: true
+
+        requestParameters:
+          'integration.request.querystring.MessageAttribute.1.Name': "'cognitoIdentityId'"
+          'integration.request.querystring.MessageAttribute.1.Value.StringValue': 'context.identity.cognitoIdentityId'
+          'integration.request.querystring.MessageAttribute.1.Value.DataType': "'String'"
+          'integration.request.querystring.MessageAttribute.2.Name': "'cognitoAuthenticationProvider'"
+          'integration.request.querystring.MessageAttribute.2.Value.StringValue': 'context.identity.cognitoAuthenticationProvider'
+          'integration.request.querystring.Me]
+```
