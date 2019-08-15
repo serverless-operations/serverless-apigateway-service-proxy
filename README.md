@@ -236,4 +236,5 @@ custom:
           'integration.request.querystring.MessageAttribute.1.Value.DataType': "'String'"
           'integration.request.querystring.MessageAttribute.2.Name': "'cognitoAuthenticationProvider'"
           'integration.request.querystring.MessageAttribute.2.Value.StringValue': 'context.identity.cognitoAuthenticationProvider'
+          'integration.request.querystring.MessageAttribute.2.Value.DataType': "'String'"
 ```
