@@ -2,21 +2,18 @@
 
 const expect = require('chai').expect
 const fetch = require('node-fetch')
-const { deployService, removeService, getApiGatewayEndpoint } = require('./../../utils')
+const { deployWithRandomStage, removeService } = require('../../../utils')
 
-describe('SQS Proxy Integration Test', () => {
+describe('Single SQS Proxy Integration Test', () => {
   let endpoint
-  let stackName
   let stage
-  const config = '__tests__/integration/sqs/service/serverless.yml'
+  const config = '__tests__/integration/sqs/single-integration/service/serverless.yml'
 
   beforeAll(async () => {
-    stage = Math.random()
-      .toString(32)
-      .substring(2)
-    stackName = 'sqs-proxy-' + stage
-    deployService(stage, config)
-    endpoint = await getApiGatewayEndpoint(stackName)
+    const result = await deployWithRandomStage(config)
+
+    stage = result.stage
+    endpoint = result.endpoint
   })
 
   afterAll(() => {

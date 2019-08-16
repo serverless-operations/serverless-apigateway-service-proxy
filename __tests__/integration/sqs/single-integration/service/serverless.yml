@@ -5,7 +5,7 @@ provider:
   runtime: nodejs10.x
 
 plugins:
-  localPath: './../'
+  localPath: './../../../../../../'
   modules:
     - serverless-apigateway-service-proxy
 
@@ -14,10 +14,10 @@ custom:
     - sqs:
         path: /sqs
         method: post
-        queueName: {"Fn::GetAtt":[ "SQSQueue", "QueueName" ]}
+        queueName: { 'Fn::GetAtt': ['SQSQueue', 'QueueName'] }
         cors: true
 
 resources:
   Resources:
     SQSQueue:
-      Type: "AWS::SQS::Queue"
+      Type: 'AWS::SQS::Queue'

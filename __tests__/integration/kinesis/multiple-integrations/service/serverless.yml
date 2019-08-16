@@ -1,0 +1,45 @@
+service: multiple-kinesis-proxy
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+
+plugins:
+  localPath: './../../../../../../'
+  modules:
+    - serverless-apigateway-service-proxy
+
+custom:
+  apiGatewayServiceProxies:
+    - kinesis:
+        path: /kinesis1
+        method: post
+        streamName: { Ref: 'YourStream1' }
+        cors: true
+
+    - kinesis:
+        path: /kinesis2
+        method: post
+        streamName: { Ref: 'YourStream2' }
+        cors: true
+
+    - kinesis:
+        path: /kinesis3
+        method: post
+        streamName: { Ref: 'YourStream3' }
+        cors: true
+
+resources:
+  Resources:
+    YourStream1:
+      Type: AWS::Kinesis::Stream
+      Properties:
+        ShardCount: 1
+    YourStream2:
+      Type: AWS::Kinesis::Stream
+      Properties:
+        ShardCount: 1
+    YourStream3:
+      Type: AWS::Kinesis::Stream
+      Properties:
+        ShardCount: 1
