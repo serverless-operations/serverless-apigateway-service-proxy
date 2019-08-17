@@ -1,0 +1,40 @@
+'use strict'
+
+const expect = require('chai').expect
+const fetch = require('node-fetch')
+const { deployWithRandomStage, removeService } = require('../../../utils')
+
+describe('Multiple Kinesis Proxy Integrations Test', () => {
+  let endpoint
+  let stage
+  const config = '__tests__/integration/kinesis/multiple-integrations/service/serverless.yml'
+
+  beforeAll(async () => {
+    const result = await deployWithRandomStage(config)
+    stage = result.stage
+    endpoint = result.endpoint
+  })
+
+  afterAll(() => {
+    removeService(stage, config)
+  })
+
+  it('should get correct response from multiple kinesis proxy endpoints', async () => {
+    const streams = ['kinesis1', 'kinesis2', 'kinesis3']
+
+    for (const stream of streams) {
+      const testEndpoint = `${endpoint}/${stream}`
+
+      const response = await fetch(testEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ Data: `data for stream ${stream}`, PartitionKey: 'some key' })
+      })
+      expect(response.headers.get('access-control-allow-origin')).to.deep.equal('*')
+      expect(response.status).to.be.equal(200)
+      const body = await response.json()
+      expect(body).to.have.own.property('ShardId')
+      expect(body).to.have.own.property('SequenceNumber')
+    }
+  })
+})
