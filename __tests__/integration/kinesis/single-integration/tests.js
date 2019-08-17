@@ -2,21 +2,17 @@
 
 const expect = require('chai').expect
 const fetch = require('node-fetch')
-const { deployService, removeService, getApiGatewayEndpoint } = require('./../../utils')
+const { deployWithRandomStage, removeService } = require('../../../utils')
 
-describe('Kinesis Proxy Integration Test', () => {
+describe('Single Kinesis Proxy Integration Test', () => {
   let endpoint
-  let stackName
   let stage
-  const config = '__tests__/integration/kinesis/service/serverless.yml'
+  const config = '__tests__/integration/kinesis/single-integration/service/serverless.yml'
 
   beforeAll(async () => {
-    stage = Math.random()
-      .toString(32)
-      .substring(2)
-    stackName = 'kinesis-proxy-' + stage
-    deployService(stage, config)
-    endpoint = await getApiGatewayEndpoint(stackName)
+    const result = await deployWithRandomStage(config)
+    stage = result.stage
+    endpoint = result.endpoint
   })
 
   afterAll(() => {
