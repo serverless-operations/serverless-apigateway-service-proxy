@@ -1,0 +1,39 @@
+service: multiple-sqs-proxy
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+
+plugins:
+  localPath: './../../../../../../'
+  modules:
+    - serverless-apigateway-service-proxy
+
+custom:
+  apiGatewayServiceProxies:
+    - sqs:
+        path: /sqs1
+        method: post
+        queueName: { 'Fn::GetAtt': ['SQSQueue1', 'QueueName'] }
+        cors: true
+
+    - sqs:
+        path: /sqs2
+        method: post
+        queueName: { 'Fn::GetAtt': ['SQSQueue2', 'QueueName'] }
+        cors: true
+
+    - sqs:
+        path: /sqs3
+        method: post
+        queueName: { 'Fn::GetAtt': ['SQSQueue3', 'QueueName'] }
+        cors: true
+
+resources:
+  Resources:
+    SQSQueue1:
+      Type: 'AWS::SQS::Queue'
+    SQSQueue2:
+      Type: 'AWS::SQS::Queue'
+    SQSQueue3:
+      Type: 'AWS::SQS::Queue'

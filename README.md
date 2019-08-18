@@ -2,16 +2,19 @@
 [![Build Status](https://travis-ci.org/horike37/serverless-apigateway-service-proxy.svg?branch=master)](https://travis-ci.org/horike37/serverless-apigateway-service-proxy) [![npm version](https://badge.fury.io/js/serverless-apigateway-service-proxy.svg)](https://badge.fury.io/js/serverless-apigateway-service-proxy) [![Coverage Status](https://coveralls.io/repos/github/horike37/serverless-apigateway-service-proxy/badge.svg?branch=master)](https://coveralls.io/github/horike37/serverless-apigateway-service-proxy?branch=master) [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 
 # Serverless APIGateway Service Proxy(BETA)
+
 This Serverless Framewrok plugin supports the AWS service proxy integration feature of API Gateway. You can directly connect API Gateway to AWS services without Lambda.
 
 ## Install
+
 Run `servelress plugin install` in your Serverless project.
 
-```
-$ serverless plugin install -n serverless-apigateway-service-proxy
+```bash
+serverless plugin install -n serverless-apigateway-service-proxy
 ```
 
 ## Supported AWS services
+
 Here is a services list which this plugin supports for now. But will expand to other services in the feature.
 Please pull request if you are intersted in it.
 
@@ -19,10 +22,13 @@ Please pull request if you are intersted in it.
 - SQS
 
 ## How to use
+
 Define settings of the AWS services you want to integrate under `custom > apiGatewayServiceProxies` and run `serverless deploy`.
 
 ### Kinesis
+
 Sample syntax for Kinesis proxy in serverless.yml.
+
 ```yaml
 custom:
   apiGatewayServiceProxies:
@@ -41,34 +47,38 @@ resources:
 ```
 
 Sample request after deploying.
-```
+
+```bash
 curl -XPOST https://xxxxxxx.execute-api.us-east-1.amazonaws.com/dev/kinesis -d '{"Data": "some data","PartitionKey": "some key"}'  -H 'Content-Type:application/json'
 ```
 
 ### SQS
 
 Sample syntax for SQS proxy in serverless.yml.
+
 ```yaml
 custom:
   apiGatewayServiceProxies:
     - sqs:
         path: /sqs
         method: post
-        queueName: {"Fn::GetAtt":[ "SQSQueue", "QueueName" ]}
+        queueName: { 'Fn::GetAtt': ['SQSQueue', 'QueueName'] }
         cors: true
 
 resources:
   Resources:
     SQSQueue:
-      Type: "AWS::SQS::Queue"
+      Type: 'AWS::SQS::Queue'
 ```
 
 Sample request after deploying.
-```
+
+```bash
 curl -XPOST https://xxxxxx.execute-api.us-east-1.amazonaws.com/dev/sqs -d '{"message": "testtest"}' -H 'Content-Type:application/json'
 ```
 
 ## Common API Gateway features
+
 ### Enabling CORS
 
 To set CORS configurations for your HTTP endpoints, simply modify your event configurations as follows:
@@ -143,7 +153,40 @@ custom:
           cacheControl: 'max-age=600, s-maxage=600, proxy-revalidate' # Caches on browser and proxy for 10 minutes and doesnt allow proxy to serve out of date content
 ```
 
-### Customizing request body mapping templates
+### Adding Authorization
+
+You can pass in any supported authorization type:
+
+```yml
+custom:
+  apiGatewayServiceProxies:
+    - sqs:
+        path: /sqs
+        method: post
+        queueName: { 'Fn::GetAtt': ['SQSQueue', 'QueueName'] }
+        cors: true
+
+        # optional - defaults to 'NONE'
+        authorizationType: 'AWS_IAM' # can be one of ['NONE', 'AWS_IAM', 'CUSTOM', 'COGNITO_USER_POOLS']
+
+        # when using 'CUSTOM' authorization type, one should specify authorizerId
+        # authorizerId: { Ref: 'AuthorizerLogicalId' }
+        # when using 'COGNITO_USER_POOLS' authorization type, one can specify a list of authorization scopes
+        # authorizationScopes: ['scope1','scope2']
+
+resources:
+  Resources:
+    SQSQueue:
+      Type: 'AWS::SQS::Queue'
+```
+
+Source: [AWS::ApiGateway::Method docs](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigateway-method.html#cfn-apigateway-method-authorizationtype)
+
+## Specific features
+
+### Kinesis
+
+#### Customizing request body mapping templates
 
 If you'd like to add content types or customize the default templates, you can do so by including your custom [API Gateway request mapping template](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-mapping-template-reference.html) in `serverless.yml` like so:
 
@@ -169,4 +212,29 @@ custom:
                 - MyStreamArn:
                     Fn::GetAtt: [MyStream, Arn]
 ```
+
 Source: [How to connect SNS to Kinesis for cross-account delivery via API Gateway](https://theburningmonk.com/2019/07/how-to-connect-sns-to-kinesis-for-cross-account-delivery-via-api-gateway/)
+
+### SQS
+
+#### Customizing request parameters
+
+If you'd like to pass additional data to the integration request, you can do so by including your custom [API Gateway request parameters](https://docs.aws.amazon.com/apigateway/latest/developerguide/request-response-data-mappings.html) in `serverless.yml` like so:
+
+```yml
+custom:
+  apiGatewayServiceProxies:
+    - sqs:
+        path: /queue
+        method: post
+        queueName: !GetAtt MyQueue.QueueName
+        cors: true
+
+        requestParameters:
+          'integration.request.querystring.MessageAttribute.1.Name': "'cognitoIdentityId'"
+          'integration.request.querystring.MessageAttribute.1.Value.StringValue': 'context.identity.cognitoIdentityId'
+          'integration.request.querystring.MessageAttribute.1.Value.DataType': "'String'"
+          'integration.request.querystring.MessageAttribute.2.Name': "'cognitoAuthenticationProvider'"
+          'integration.request.querystring.MessageAttribute.2.Value.StringValue': 'context.identity.cognitoAuthenticationProvider'
+          'integration.request.querystring.MessageAttribute.2.Value.DataType': "'String'"
+```
