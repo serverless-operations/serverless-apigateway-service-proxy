@@ -6,14 +6,41 @@ const fs = require('fs')
 const path = require('path')
 const execSync = require('child_process').execSync
 const aws = require('aws-sdk')
+const s3 = new aws.S3()
 const cloudformation = new aws.CloudFormation({ region: 'us-east-1' })
 
-async function getApiGatewayEndpoint(stackName) {
-  const result = await cloudformation.describeStacks({ StackName: stackName }).promise()
+function getApiGatewayEndpoint(outputs) {
+  return outputs.ServiceEndpoint.match(/https:\/\/.+\.execute-api\..+\.amazonaws\.com.+/)[0]
+}
 
-  const endpointOutput = _.find(result.Stacks[0].Outputs, { OutputKey: 'ServiceEndpoint' })
-    .OutputValue
-  return endpointOutput.match(/https:\/\/.+\.execute-api\..+\.amazonaws\.com.+/)[0]
+async function getStackOutputs(stackName) {
+  const result = await cloudformation.describeStacks({ StackName: stackName }).promise()
+  const stack = result.Stacks[0]
+
+  const keys = stack.Outputs.map((x) => x.OutputKey)
+  const values = stack.Outputs.map((x) => x.OutputValue)
+
+  return _.zipObject(keys, values)
+}
+
+async function getS3Object(bucket, key) {
+  const resp = await s3
+    .getObject({
+      Bucket: bucket,
+      Key: key
+    })
+    .promise()
+
+  return resp.Body
+}
+
+async function deleteS3Object(bucket, key) {
+  await s3
+    .deleteObject({
+      Bucket: bucket,
+      Key: key
+    })
+    .promise()
 }
 
 function deployService(stage, config) {
@@ -37,14 +64,16 @@ async function deployWithRandomStage(config) {
     .substring(2)
   const stackName = `${serviceName}-${stage}`
   deployService(stage, config)
-  const endpoint = await getApiGatewayEndpoint(stackName)
+  const outputs = await getStackOutputs(stackName)
+  const endpoint = getApiGatewayEndpoint(outputs)
 
-  return { stage, endpoint }
+  return { stackName, stage, outputs, endpoint }
 }
 
 module.exports = {
-  getApiGatewayEndpoint,
   deployService,
   removeService,
-  deployWithRandomStage
+  deployWithRandomStage,
+  getS3Object,
+  deleteS3Object
 }
