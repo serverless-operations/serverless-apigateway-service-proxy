@@ -20,6 +20,7 @@ Please pull request if you are intersted in it.
 
 - Kinesis Streams
 - SQS
+- S3
 
 ## How to use
 
@@ -27,7 +28,7 @@ Define settings of the AWS services you want to integrate under `custom > apiGat
 
 ### Kinesis
 
-Sample syntax for Kinesis proxy in serverless.yml.
+Sample syntax for Kinesis proxy in `serverless.yml`.
 
 ```yaml
 custom:
@@ -49,12 +50,12 @@ resources:
 Sample request after deploying.
 
 ```bash
-curl -XPOST https://xxxxxxx.execute-api.us-east-1.amazonaws.com/dev/kinesis -d '{"Data": "some data","PartitionKey": "some key"}'  -H 'Content-Type:application/json'
+curl -X POST https://xxxxxxx.execute-api.us-east-1.amazonaws.com/dev/kinesis -d '{"Data": "some data","PartitionKey": "some key"}'  -H 'Content-Type:application/json'
 ```
 
 ### SQS
 
-Sample syntax for SQS proxy in serverless.yml.
+Sample syntax for SQS proxy in `serverless.yml`.
 
 ```yaml
 custom:
@@ -74,7 +75,55 @@ resources:
 Sample request after deploying.
 
 ```bash
-curl -XPOST https://xxxxxx.execute-api.us-east-1.amazonaws.com/dev/sqs -d '{"message": "testtest"}' -H 'Content-Type:application/json'
+curl -X POST https://xxxxxx.execute-api.us-east-1.amazonaws.com/dev/sqs -d '{"message": "testtest"}' -H 'Content-Type:application/json'
+```
+
+### S3
+
+Sample syntax for S3 proxy in `serverless.yml`.
+
+```yaml
+custom:
+  apiGatewayServiceProxies:
+    - s3:
+        path: /s3
+        method: post
+        action: PutObject
+        bucket:
+          Ref: S3Bucket
+        key: static-key.json # use static key
+        cors: true
+
+    - s3:
+        path: /s3/{myKey} # use path param
+        method: get
+        action: GetObject
+        bucket:
+          Ref: S3Bucket
+        key:
+          pathParam: myKey
+        cors: true
+
+    - s3:
+        path: /s3
+        method: delete
+        action: DeleteObject
+        bucket:
+          Ref: S3Bucket
+        key:
+          queryStringParam: key # use query string param
+        cors: true
+
+resources:
+  Resources:
+    S3Bucket:
+      Type: 'AWS::S3::Bucket'
+```
+
+Sample request after deploying.
+
+```bash
+curl -X POST https://xxxxxx.execute-api.us-east-1.amazonaws.com/dev/s3 -d '{"message": "testtest"}' -H 'Content-Type:application/json'
 ```
 
 ## Common API Gateway features

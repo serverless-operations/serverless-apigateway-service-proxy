@@ -22,6 +22,7 @@
     ]
   },
   "dependencies": {
+    "@hapi/joi": "^15.1.0",
     "serverless": "^1.48.2"
   },
   "author": "horike37",
