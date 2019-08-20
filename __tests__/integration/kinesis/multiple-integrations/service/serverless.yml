@@ -14,32 +14,39 @@ custom:
     - kinesis:
         path: /kinesis1
         method: post
-        streamName: { Ref: 'YourStream1' }
+        streamName: { Ref: 'YourStream' }
         cors: true
-
     - kinesis:
         path: /kinesis2
         method: post
-        streamName: { Ref: 'YourStream2' }
+        partitionKey: 'hardcordedkey' # use static partitionkey
+        streamName: { Ref: 'YourStream' }
         cors: true
-
     - kinesis:
-        path: /kinesis3
+        path: /kinesis3/{myKey} # use path parameter
         method: post
-        streamName: { Ref: 'YourStream3' }
+        partitionKey:
+          pathParam: myKey
+        streamName: { Ref: 'YourStream' }
+        cors: true
+    - kinesis:
+        path: /kinesis4
+        method: post
+        partitionKey:
+          bodyParam: data.myKey # use body parameter
+        streamName: { Ref: 'YourStream' }
+        cors: true
+    - kinesis:
+        path: /kinesis5
+        method: post
+        partitionKey:
+          queryStringParam: myKey # use query string param
+        streamName: { Ref: 'YourStream' }
         cors: true
 
 resources:
   Resources:
-    YourStream1:
-      Type: AWS::Kinesis::Stream
-      Properties:
-        ShardCount: 1
-    YourStream2:
-      Type: AWS::Kinesis::Stream
-      Properties:
-        ShardCount: 1
-    YourStream3:
+    YourStream:
       Type: AWS::Kinesis::Stream
       Properties:
         ShardCount: 1

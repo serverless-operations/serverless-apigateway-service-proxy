@@ -25,6 +25,9 @@
     "@hapi/joi": "^15.1.0",
     "serverless": "^1.48.2"
   },
+  "jest": {
+    "setupFilesAfterEnv": ["<rootDir>/__tests__/setup-tests.js"]
+  },
   "author": "horike37",
   "license": "MIT",
   "devDependencies": {
