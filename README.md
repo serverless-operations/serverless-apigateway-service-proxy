@@ -33,9 +33,36 @@ Sample syntax for Kinesis proxy in `serverless.yml`.
 ```yaml
 custom:
   apiGatewayServiceProxies:
+    - kinesis: # partitionkey is set apigateway requestid by default
+        path: /kinesis
+        method: post
+        streamName: { Ref: 'YourStream' }
+        cors: true
     - kinesis:
         path: /kinesis
         method: post
+        partitionKey: 'hardcordedkey' # use static partitionkey
+        streamName: { Ref: 'YourStream' }
+        cors: true
+    - kinesis:
+        path: /kinesis/{myKey} # use path parameter
+        method: post
+        partitionKey:
+          pathParam: myKey
+        streamName: { Ref: 'YourStream' }
+        cors: true
+    - kinesis:
+        path: /kinesis
+        method: post
+        partitionKey:
+          bodyParam: data.myKey # use body parameter
+        streamName: { Ref: 'YourStream' }
+        cors: true
+    - kinesis:
+        path: /kinesis
+        method: post
+        partitionKey:
+          queryStringParam: myKey # use query string param
         streamName: { Ref: 'YourStream' }
         cors: true
 
@@ -50,7 +77,7 @@ resources:
 Sample request after deploying.
 
 ```bash
-curl -X POST https://xxxxxxx.execute-api.us-east-1.amazonaws.com/dev/kinesis -d '{"Data": "some data","PartitionKey": "some key"}'  -H 'Content-Type:application/json'
+curl -X POST https://xxxxxxx.execute-api.us-east-1.amazonaws.com/dev/kinesis -d '{"message": "some data"}'  -H 'Content-Type:application/json'
 ```
 
 ### SQS
@@ -76,6 +103,28 @@ Sample request after deploying.
 
 ```bash
 curl -X POST https://xxxxxx.execute-api.us-east-1.amazonaws.com/dev/sqs -d '{"message": "testtest"}' -H 'Content-Type:application/json'
+```
+
+#### Customizing request parameters
+
+If you'd like to pass additional data to the integration request, you can do so by including your custom [API Gateway request parameters](https://docs.aws.amazon.com/apigateway/latest/developerguide/request-response-data-mappings.html) in `serverless.yml` like so:
+
+```yml
+custom:
+  apiGatewayServiceProxies:
+    - sqs:
+        path: /queue
+        method: post
+        queueName: !GetAtt MyQueue.QueueName
+        cors: true
+
+        requestParameters:
+          'integration.request.querystring.MessageAttribute.1.Name': "'cognitoIdentityId'"
+          'integration.request.querystring.MessageAttribute.1.Value.StringValue': 'context.identity.cognitoIdentityId'
+          'integration.request.querystring.MessageAttribute.1.Value.DataType': "'String'"
+          'integration.request.querystring.MessageAttribute.2.Name': "'cognitoAuthenticationProvider'"
+          'integration.request.querystring.MessageAttribute.2.Value.StringValue': 'context.identity.cognitoAuthenticationProvider'
+          'integration.request.querystring.MessageAttribute.2.Value.DataType': "'String'"
 ```
 
 ### S3
@@ -231,11 +280,7 @@ resources:
 
 Source: [AWS::ApiGateway::Method docs](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigateway-method.html#cfn-apigateway-method-authorizationtype)
 
-## Specific features
-
-### Kinesis
-
-#### Customizing request body mapping templates
+### Customizing request body mapping templates
 
 If you'd like to add content types or customize the default templates, you can do so by including your custom [API Gateway request mapping template](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-mapping-template-reference.html) in `serverless.yml` like so:
 
@@ -263,27 +308,3 @@ custom:
 ```
 
 Source: [How to connect SNS to Kinesis for cross-account delivery via API Gateway](https://theburningmonk.com/2019/07/how-to-connect-sns-to-kinesis-for-cross-account-delivery-via-api-gateway/)
-
-### SQS
-
-#### Customizing request parameters
-
-If you'd like to pass additional data to the integration request, you can do so by including your custom [API Gateway request parameters](https://docs.aws.amazon.com/apigateway/latest/developerguide/request-response-data-mappings.html) in `serverless.yml` like so:
-
-```yml
-custom:
-  apiGatewayServiceProxies:
-    - sqs:
-        path: /queue
-        method: post
-        queueName: !GetAtt MyQueue.QueueName
-        cors: true
-
-        requestParameters:
-          'integration.request.querystring.MessageAttribute.1.Name': "'cognitoIdentityId'"
-          'integration.request.querystring.MessageAttribute.1.Value.StringValue': 'context.identity.cognitoIdentityId'
-          'integration.request.querystring.MessageAttribute.1.Value.DataType': "'String'"
-          'integration.request.querystring.MessageAttribute.2.Name': "'cognitoAuthenticationProvider'"
-          'integration.request.querystring.MessageAttribute.2.Value.StringValue': 'context.identity.cognitoAuthenticationProvider'
-          'integration.request.querystring.MessageAttribute.2.Value.DataType': "'String'"
-```

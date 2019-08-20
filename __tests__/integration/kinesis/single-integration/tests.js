@@ -25,7 +25,7 @@ describe('Single Kinesis Proxy Integration Test', () => {
     const response = await fetch(testEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ Data: 'some data', PartitionKey: 'some key' })
+      body: JSON.stringify({ message: 'some data' })
     })
     expect(response.headers.get('access-control-allow-origin')).to.deep.equal('*')
     expect(response.status).to.be.equal(200)
