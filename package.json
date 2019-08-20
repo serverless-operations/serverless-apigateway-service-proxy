@@ -36,6 +36,7 @@
     "@commitlint/cli": "^8.1.0",
     "@commitlint/config-conventional": "^8.1.0",
     "aws-sdk": "^2.496.0",
+    "aws-testing-library": "^1.0.8",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "coveralls": "^3.0.5",

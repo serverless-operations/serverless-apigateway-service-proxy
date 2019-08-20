@@ -1,0 +1,64 @@
+service: sns-proxy
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  stage: ${opt:stage, 'dev'}
+
+plugins:
+  localPath: './../../../../../../'
+  modules:
+    - serverless-apigateway-service-proxy
+
+custom:
+  apiGatewayServiceProxies:
+    - sns:
+        path: /sns
+        method: post
+        topicName: { 'Fn::GetAtt': ['SNSTopic', 'TopicName'] }
+        cors: true
+        request:
+          template:
+            application/json:
+              'Fn::Join':
+                - ''
+                - - "Action=Publish&Message=$util.urlEncode('This is a fixed message')&TopicArn=$util.urlEncode('"
+                  - { Ref: SNSTopic }
+                  - "')"
+
+resources:
+  Resources:
+    SNSTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        Subscription:
+          - Endpoint: { 'Fn::GetAtt': ['SqsQueue', 'Arn'] }
+            Protocol: sqs
+
+    SqsQueue:
+      Type: AWS::SQS::Queue
+
+    SqsQueuePolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        PolicyDocument:
+          Version: '2012-10-17'
+          Id: SqsQueuePolicy
+          Statement:
+            - Sid: Allow-SendMessage-To-Queue-From-SNS-Topic
+              Effect: Allow
+              Principal: "*"
+              Action:
+                - sqs:SendMessage
+              Resource: "*"
+              Condition:
+                ArnEquals:
+                  aws:SourceArn:
+                    Ref: SNSTopic
+
+        Queues:
+          - Ref: SqsQueue
+        
+  Outputs:
+    SqsQueueUrl:
+      Value: { Ref: SqsQueue }
