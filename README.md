@@ -313,6 +313,10 @@ Source: [AWS::ApiGateway::Method docs](https://docs.aws.amazon.com/AWSCloudForma
 If you'd like to add content types or customize the default templates, you can do so by including your custom [API Gateway request mapping template](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-mapping-template-reference.html) in `serverless.yml` like so:
 
 ```yml
+# Required for using Fn::Sub
+plugins:
+  - serverless-cloudformation-sub-variables
+
 custom:
   apiGatewayServiceProxies:
     - kinesis:
@@ -344,6 +348,10 @@ Source: [How to connect SNS to Kinesis for cross-account delivery via API Gatewa
 Similar to the [Kinesis](#kinesis-1) support, you can customize the default request mapping templates in `serverless.yml` like so:
 
 ```yml
+# Required for using Fn::Sub
+plugins:
+  - serverless-cloudformation-sub-variables
+
 custom:
   apiGatewayServiceProxies:
     - kinesis:
@@ -353,11 +361,9 @@ custom:
         request:
           template:
             application/json:
-              'Fn::Join':
-                - ''
-                - - "Action=Publish&Message=$util.urlEncode('This is a fixed message')&TopicArn=$util.urlEncode('"
-                  - { Ref: MyTopic }
-                  - "')"
+              Fn::Sub:
+                - "Action=Publish&Message=$util.urlEncode('This is a fixed message')&TopicArn=$util.urlEncode('#{MyTopicArn}')"
+                - MyTopicArn: { Ref: MyTopic }
 ```
 
 > It is important that the mapping template will return a valid `application/x-www-form-urlencoded` string
