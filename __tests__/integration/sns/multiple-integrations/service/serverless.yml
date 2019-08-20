@@ -1,0 +1,103 @@
+service: multiple-sns-proxy
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+
+plugins:
+  localPath: './../../../../../../'
+  modules:
+    - serverless-apigateway-service-proxy
+
+custom:
+  apiGatewayServiceProxies:
+    - sns:
+        path: /sns1
+        method: post
+        topicName: { 'Fn::GetAtt': ['SNSTopic1', 'TopicName'] }
+        cors: true
+
+    - sns:
+        path: /sns2
+        method: post
+        topicName: { 'Fn::GetAtt': ['SNSTopic2', 'TopicName'] }
+        cors: true
+
+    - sns:
+        path: /sns3
+        method: post
+        topicName: { 'Fn::GetAtt': ['SNSTopic3', 'TopicName'] }
+        cors: true
+
+resources:
+  Resources:
+    SNSTopic1:
+      Type: AWS::SNS::Topic
+      Properties:
+        Subscription:
+          - Endpoint: { 'Fn::GetAtt': ['SqsQueue', 'Arn'] }
+            Protocol: sqs
+
+    SNSTopic2:
+      Type: AWS::SNS::Topic
+      Properties:
+        Subscription:
+          - Endpoint: { 'Fn::GetAtt': ['SqsQueue', 'Arn'] }
+            Protocol: sqs
+    
+    SNSTopic3:
+      Type: AWS::SNS::Topic
+      Properties:
+        Subscription:
+          - Endpoint: { 'Fn::GetAtt': ['SqsQueue', 'Arn'] }
+            Protocol: sqs
+
+    SqsQueue:
+      Type: AWS::SQS::Queue
+
+    SqsQueuePolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        PolicyDocument:
+          Version: '2012-10-17'
+          Id: SqsQueuePolicy
+          Statement:
+            - Sid: Allow-SendMessage-To-Queue-From-SNS-Topic1
+              Effect: Allow
+              Principal: "*"
+              Action:
+                - sqs:SendMessage
+              Resource: "*"
+              Condition:
+                ArnEquals:
+                  aws:SourceArn:
+                    Ref: SNSTopic1
+
+            - Sid: Allow-SendMessage-To-Queue-From-SNS-Topic2
+              Effect: Allow
+              Principal: "*"
+              Action:
+                - sqs:SendMessage
+              Resource: "*"
+              Condition:
+                ArnEquals:
+                  aws:SourceArn:
+                    Ref: SNSTopic2
+
+            - Sid: Allow-SendMessage-To-Queue-From-SNS-Topic3
+              Effect: Allow
+              Principal: "*"
+              Action:
+                - sqs:SendMessage
+              Resource: "*"
+              Condition:
+                ArnEquals:
+                  aws:SourceArn:
+                    Ref: SNSTopic3
+
+        Queues:
+          - Ref: SqsQueue
+        
+  Outputs:
+    SqsQueueUrl:
+      Value: { Ref: SqsQueue }

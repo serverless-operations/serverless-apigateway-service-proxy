@@ -7,7 +7,9 @@ const path = require('path')
 const execSync = require('child_process').execSync
 const aws = require('aws-sdk')
 const s3 = new aws.S3()
-const cloudformation = new aws.CloudFormation({ region: 'us-east-1' })
+
+const region = 'us-east-1'
+const cloudformation = new aws.CloudFormation({ region })
 
 function getApiGatewayEndpoint(outputs) {
   return outputs.ServiceEndpoint.match(/https:\/\/.+\.execute-api\..+\.amazonaws\.com.+/)[0]
@@ -67,7 +69,7 @@ async function deployWithRandomStage(config) {
   const outputs = await getStackOutputs(stackName)
   const endpoint = getApiGatewayEndpoint(outputs)
 
-  return { stackName, stage, outputs, endpoint }
+  return { stackName, stage, outputs, endpoint, region }
 }
 
 module.exports = {

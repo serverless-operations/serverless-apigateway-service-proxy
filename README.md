@@ -21,6 +21,7 @@ Please pull request if you are intersted in it.
 - Kinesis Streams
 - SQS
 - S3
+- SNS
 
 ## How to use
 
@@ -77,7 +78,7 @@ resources:
 Sample request after deploying.
 
 ```bash
-curl -X POST https://xxxxxxx.execute-api.us-east-1.amazonaws.com/dev/kinesis -d '{"message": "some data"}'  -H 'Content-Type:application/json'
+curl https://xxxxxxx.execute-api.us-east-1.amazonaws.com/dev/kinesis -d '{"message": "some data"}'  -H 'Content-Type:application/json'
 ```
 
 ### SQS
@@ -102,7 +103,7 @@ resources:
 Sample request after deploying.
 
 ```bash
-curl -X POST https://xxxxxx.execute-api.us-east-1.amazonaws.com/dev/sqs -d '{"message": "testtest"}' -H 'Content-Type:application/json'
+curl https://xxxxxx.execute-api.us-east-1.amazonaws.com/dev/sqs -d '{"message": "testtest"}' -H 'Content-Type:application/json'
 ```
 
 #### Customizing request parameters
@@ -172,7 +173,32 @@ resources:
 Sample request after deploying.
 
 ```bash
-curl -X POST https://xxxxxx.execute-api.us-east-1.amazonaws.com/dev/s3 -d '{"message": "testtest"}' -H 'Content-Type:application/json'
+curl https://xxxxxx.execute-api.us-east-1.amazonaws.com/dev/s3 -d '{"message": "testtest"}' -H 'Content-Type:application/json'
+```
+
+### SNS
+
+Sample syntax for SNS proxy in `serverless.yml`.
+
+```yaml
+custom:
+  apiGatewayServiceProxies:
+    - sns:
+        path: /sns
+        method: post
+        topicName: { 'Fn::GetAtt': ['SNSTopic', 'TopicName'] }
+        cors: true
+
+resources:
+  Resources:
+    SNSTopic:
+      Type: AWS::SNS::Topic
+```
+
+Sample request after deploying.
+
+```bash
+curl https://xxxxxx.execute-api.us-east-1.amazonaws.com/dev/sns -d '{"message": "testtest"}' -H 'Content-Type:application/json'
 ```
 
 ## Common API Gateway features
@@ -282,9 +308,15 @@ Source: [AWS::ApiGateway::Method docs](https://docs.aws.amazon.com/AWSCloudForma
 
 ### Customizing request body mapping templates
 
+#### Kinesis
+
 If you'd like to add content types or customize the default templates, you can do so by including your custom [API Gateway request mapping template](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-mapping-template-reference.html) in `serverless.yml` like so:
 
 ```yml
+# Required for using Fn::Sub
+plugins:
+  - serverless-cloudformation-sub-variables
+
 custom:
   apiGatewayServiceProxies:
     - kinesis:
@@ -307,4 +339,33 @@ custom:
                     Fn::GetAtt: [MyStream, Arn]
 ```
 
+> It is important that the mapping template will return a valid `application/json` string
+
 Source: [How to connect SNS to Kinesis for cross-account delivery via API Gateway](https://theburningmonk.com/2019/07/how-to-connect-sns-to-kinesis-for-cross-account-delivery-via-api-gateway/)
+
+#### SNS
+
+Similar to the [Kinesis](#kinesis-1) support, you can customize the default request mapping templates in `serverless.yml` like so:
+
+```yml
+# Required for using Fn::Sub
+plugins:
+  - serverless-cloudformation-sub-variables
+
+custom:
+  apiGatewayServiceProxies:
+    - kinesis:
+        path: /sns
+        method: post
+        topicName: { 'Fn::GetAtt': ['SNSTopic', 'TopicName'] }
+        request:
+          template:
+            application/json:
+              Fn::Sub:
+                - "Action=Publish&Message=$util.urlEncode('This is a fixed message')&TopicArn=$util.urlEncode('#{MyTopicArn}')"
+                - MyTopicArn: { Ref: MyTopic }
+```
+
+> It is important that the mapping template will return a valid `application/x-www-form-urlencoded` string
+
+Source: [Connect AWS API Gateway directly to SNS using a service integration](https://www.alexdebrie.com/posts/aws-api-gateway-service-proxy/)
