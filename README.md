@@ -164,6 +164,16 @@ custom:
           queryStringParam: key # use query string param
         cors: true
 
+    - s3:
+        path: /s3
+        method: post
+        action: PutObject
+        bucket:
+          Ref: S3Bucket
+        key:
+          timestamp: foo # use timestamp & prefix (YYYY/MM/DD/HH/foo-YYYY-DD-MM-HH-mm-ss-ms)
+        cors: true
+
 resources:
   Resources:
     S3Bucket:
