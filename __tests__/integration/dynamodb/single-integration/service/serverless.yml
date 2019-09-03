@@ -1,0 +1,38 @@
+service: dynamodb-proxy
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+
+plugins:
+  localPath: './../../../../../../'
+  modules:
+    - serverless-apigateway-service-proxy
+
+custom:
+  apiGatewayServiceProxies:
+    - dynamodb:
+        path: /dynamodb
+        method: post
+        tableName:
+          Ref: MyTestTable
+        hashKey: 'id'
+        cors: true
+
+resources:
+  Resources:
+    MyTestTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: MyTestTable
+        AttributeDefinitions:
+          -
+            AttributeName: id
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1

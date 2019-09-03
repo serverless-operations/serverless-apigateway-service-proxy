@@ -9,6 +9,7 @@ const aws = require('aws-sdk')
 const s3 = new aws.S3()
 
 const region = 'us-east-1'
+const dynamodb = new aws.DynamoDB({ region })
 const cloudformation = new aws.CloudFormation({ region })
 
 function getApiGatewayEndpoint(outputs) {
@@ -23,6 +24,19 @@ async function getStackOutputs(stackName) {
   const values = stack.Outputs.map((x) => x.OutputValue)
 
   return _.zipObject(keys, values)
+}
+
+async function getDynamodbItem(tableName, hashKey) {
+  return await dynamodb
+    .getItem({
+      Key: {
+        id: {
+          S: hashKey
+        }
+      },
+      TableName: tableName
+    })
+    .promise()
 }
 
 async function getS3Object(bucket, key) {
@@ -77,5 +91,6 @@ module.exports = {
   removeService,
   deployWithRandomStage,
   getS3Object,
-  deleteS3Object
+  deleteS3Object,
+  getDynamodbItem
 }
