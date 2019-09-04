@@ -176,6 +176,27 @@ Sample request after deploying.
 curl https://xxxxxx.execute-api.us-east-1.amazonaws.com/dev/s3 -d '{"message": "testtest"}' -H 'Content-Type:application/json'
 ```
 
+#### Customizing request parameters
+
+Similar to the [SQS](#sqs) support, you can customize the default request parameters `serverless.yml` like so:
+
+```yml
+custom:
+  apiGatewayServiceProxies:
+    - s3:
+        path: /s3
+        method: post
+        action: PutObject
+        bucket:
+          Ref: S3Bucket
+        cors: true
+
+        requestParameters:
+          # if requestParameters has a 'integration.request.path.object' property you should remove the key setting
+          'integration.request.path.object': 'context.requestId'
+          "integration.request.header.cache-control": "'public, max-age=31536000, immutable'"
+```
+
 ### SNS
 
 Sample syntax for SNS proxy in `serverless.yml`.
