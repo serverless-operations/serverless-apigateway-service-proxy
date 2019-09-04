@@ -189,12 +189,12 @@ custom:
         action: PutObject
         bucket:
           Ref: S3Bucket
-        key: static-key.json
         cors: true
 
         requestParameters:
-          # use auto generated object key (will override the static key)
+          # if requestParameters has a 'integration.request.path.object' property you should remove the key setting
           'integration.request.path.object': 'context.requestId'
+          "integration.request.header.cache-control": "'public, max-age=31536000, immutable'"
 ```
 
 ### SNS
