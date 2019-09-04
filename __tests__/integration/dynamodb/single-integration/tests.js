@@ -8,6 +8,7 @@ describe('Single dynamodb Proxy Integration Test', () => {
   let endpoint
   let stage
   const tableName = 'MyTestTable'
+  const hashKeyAttribute = 'id'
   const config = '__tests__/integration/dynamodb/single-integration/service/serverless.yml'
 
   beforeAll(async () => {
@@ -33,7 +34,7 @@ describe('Single dynamodb Proxy Integration Test', () => {
     expect(response.status).to.be.equal(200)
     const body = await response.json()
 
-    const item = await getDynamodbItem(tableName, body.id)
+    const item = await getDynamodbItem(tableName, hashKeyAttribute, { S: body.id })
     expect(item).to.be.deep.equal({
       Item: {
         id: { S: body.id },

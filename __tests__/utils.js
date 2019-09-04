@@ -26,17 +26,42 @@ async function getStackOutputs(stackName) {
   return _.zipObject(keys, values)
 }
 
-async function getDynamodbItem(tableName, hashKey) {
+async function getDynamodbItem(tableName, hashKeyAttribute, hashKey) {
   return await dynamodb
     .getItem({
       Key: {
-        id: {
-          S: hashKey
-        }
+        [hashKeyAttribute]: hashKey
       },
       TableName: tableName
     })
     .promise()
+}
+
+async function putDynamodbItem(tableName, item) {
+  await dynamodb
+    .putItem({
+      Item: item,
+      TableName: tableName
+    })
+    .promise()
+}
+
+async function cleanUpDynamodbItems(tableName, hashKeyAttribute) {
+  const items = await dynamodb.scan({ TableName: tableName }).promise()
+  if (items.Count > 0) {
+    await Promise.all(
+      items.Items.map(async (item) => {
+        await dynamodb
+          .deleteItem({
+            Key: {
+              [hashKeyAttribute]: item[hashKeyAttribute]
+            },
+            TableName: tableName
+          })
+          .promise()
+      })
+    )
+  }
 }
 
 async function getS3Object(bucket, key) {
@@ -92,5 +117,7 @@ module.exports = {
   deployWithRandomStage,
   getS3Object,
   deleteS3Object,
-  getDynamodbItem
+  getDynamodbItem,
+  putDynamodbItem,
+  cleanUpDynamodbItems
 }

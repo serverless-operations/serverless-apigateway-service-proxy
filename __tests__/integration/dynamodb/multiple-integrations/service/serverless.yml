@@ -1,0 +1,68 @@
+service: multiple-dynamodb-proxy
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+
+plugins:
+  localPath: './../../../../../../'
+  modules:
+    - serverless-apigateway-service-proxy
+
+custom:
+  apiGatewayServiceProxies:
+    - dynamodb:
+        path: /dynamodb/{id}
+        method: put
+        tableName:
+          Ref: MyMuTestTable
+        hashKey:
+          pathParam: id
+          attributeType: S
+        cors: true
+    - dynamodb:
+        path: /dynamodb
+        method: get
+        tableName:
+          Ref: MyMuTestTable
+        hashKey:
+          queryStringParam: id
+          attributeType: S
+        cors: true
+    - dynamodb:
+        path: /dynamodb/{id}
+        method: post
+        action: UpdateItem
+        tableName:
+          Ref: MyMuTestTable
+        hashKey:
+          pathParam: id
+          attributeType: S
+        cors: true
+    - dynamodb:
+        path: /dynamodb/{id}
+        method: delete
+        tableName:
+          Ref: MyMuTestTable
+        hashKey:
+          pathParam: id
+          attributeType: S
+        cors: true
+
+resources:
+  Resources:
+    MyMuTestTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: MyMuTestTable
+        AttributeDefinitions:
+          -
+            AttributeName: id
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
