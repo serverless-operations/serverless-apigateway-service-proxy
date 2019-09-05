@@ -5,6 +5,27 @@
 
 This Serverless Framewrok plugin supports the AWS service proxy integration feature of API Gateway. You can directly connect API Gateway to AWS services without Lambda.
 
+## TOC
+
+- [Install](#install)
+- [Supported AWS services](#supported-aws-services)
+- [How to use](#how-to-use)
+  * [Kinesis](#kinesis)
+  * [SQS](#sqs)
+    + [Customizing request parameters](#customizing-request-parameters)
+  * [S3](#s3)
+  * [SNS](#sns)
+  * [DynamoDB](#dynamodb)
+    + [Sample request after deploying.](#sample-request-after-deploying)
+      - [PutItem](#putitem)
+      - [UpdateItem](#updateitem)
+- [Common API Gateway features](#common-api-gateway-features)
+  * [Enabling CORS](#enabling-cors)
+  * [Adding Authorization](#adding-authorization)
+  * [Customizing request body mapping templates](#customizing-request-body-mapping-templates)
+    + [Kinesis](#kinesis-1)
+    + [SNS](#sns-1)
+
 ## Install
 
 Run `servelress plugin install` in your Serverless project.
@@ -22,6 +43,7 @@ Please pull request if you are intersted in it.
 - SQS
 - S3
 - SNS
+- DynamoDB
 
 ## How to use
 
@@ -199,6 +221,128 @@ Sample request after deploying.
 
 ```bash
 curl https://xxxxxx.execute-api.us-east-1.amazonaws.com/dev/sns -d '{"message": "testtest"}' -H 'Content-Type:application/json'
+```
+
+### DynamoDB
+
+The (DynamoDB Operation)[https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Operations.html] is automatically mapped by the `method` with following HTTP specification if you omit the `action`.
+
+| Method | Mapped action | Note |
+----|----|----
+| post | PutItem | hashkey is set apigateway requestid automatically by default |
+| put | PutItem | hashkey is set `pathParam` or `queryStringParam` |
+| patch | UpdateItem ||
+| get | GetItem ||
+| delete | DeleteItem ||
+
+Sample syntax for DynamoDB proxy in `serverless.yml`.
+
+```yaml
+custom:
+  apiGatewayServiceProxies:
+    - dynamodb:
+        path: /dynamodb
+        method: post
+        tableName: { Ref: 'YourTable' }
+        hashKey: 'id' # You must define hashKey attribute with `post` method
+        cors: true
+    - dynamodb:
+        path: /dynamodb/{id}
+        method: put
+        tableName: { Ref: 'YourTable' }
+        hashKey:
+          pathParam: id
+          attributeType: S
+        action: PutItem # optional
+        cors: true
+    - dynamodb:
+        path: /dynamodb/{id}/{sort}
+        method: patch
+        tableName: { Ref: 'YourTable' }
+        hashKey:
+          pathParam: id
+          attributeType: S
+        rangeKey:
+          pathParam: sort
+          attributeType: S
+        action: UpdateItem
+        cors: true
+    - dynamodb:
+        path: /dynamodb
+        method: get
+        tableName: { Ref: 'YourTable' }
+        hashKey:
+          queryStringParam: id
+          attributeType: N
+        rangeKey:
+          queryStringParam: sort
+          attributeType: S
+        action: GetItem
+        cors: true
+    - dynamodb:
+        path: /dynamodb/{id}
+        method: delete
+        tableName: { Ref: 'YourTable' }
+        hashKey:
+          pathParam: id
+          attributeType: S
+        action: DeleteItem
+        cors: true
+
+resources:
+  Resources:
+    YourTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: YourTable
+        AttributeDefinitions:
+          -
+            AttributeName: id
+            AttributeType: S
+          -
+            AttributeName: sort
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: id
+            KeyType: HASH
+          -
+            AttributeName: sort
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+```
+
+#### Sample request after deploying.
+
+##### PutItem
+```bash
+curl -XPUT https://xxxxxxx.execute-api.us-east-1.amazonaws.com/dev/dynamodb/<hashKey> \
+ -d '{"name":{"S":"john"},"address":{"S":"xxxxx"}}' \
+ -H 'Content-Type:application/json'
+```
+
+##### UpdateItem
+```bash
+curl -XPUT https://xxxxxxx.execute-api.us-east-1.amazonaws.com/dev/dynamodb/<hashKey>/<rangeKey> \
+ -d <Body> \
+ -H 'Content-Type:application/json'
+```
+
+Request body
+```json
+{
+  "UpdateExpression": "SET #n = :newName",
+  "ExpressionAttributeValues": {
+      ":newName": {
+          "S": "michel"
+      }
+  },
+  "ExpressionAttributeNames": {
+    "#n": "name"
+  }
+}
 ```
 
 ## Common API Gateway features
