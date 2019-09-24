@@ -11,14 +11,8 @@ plugins:
 
 custom:
   apiGatewayServiceProxies:
-    - sqs:
-        path: /sqs
-        method: post
-        queueName: { 'Fn::GetAtt': ['SQSQueue', 'QueueName'] }
-        cors: true
-
     - s3:
-        path: /s3/{key}
+        path: /s3-custom-role/{key}
         method: post
         action: PutObject
         bucket:
@@ -31,8 +25,6 @@ custom:
 
 resources:
   Resources:
-    SQSQueue:
-      Type: 'AWS::SQS::Queue'
     S3Bucket:
       Type: 'AWS::S3::Bucket'
     CustomS3Role:
