@@ -1,0 +1,56 @@
+service: custom-role-proxy
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+
+plugins:
+  localPath: './../../../../../../'
+  modules:
+    - serverless-apigateway-service-proxy
+
+custom:
+  apiGatewayServiceProxies:
+    - s3:
+        path: /s3-custom-role/{key}
+        method: post
+        action: PutObject
+        bucket:
+          Ref: S3Bucket
+        key:
+          pathParam: key
+        cors: true
+        roleArn:
+          Fn::GetAtt: [CustomS3Role, Arn]
+
+resources:
+  Resources:
+    S3Bucket:
+      Type: 'AWS::S3::Bucket'
+    CustomS3Role:
+      Type: 'AWS::IAM::Role'
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: 'Allow'
+              Principal: {
+                Service: 'apigateway.amazonaws.com'
+              }
+              Action: 'sts:AssumeRole'
+        Policies:
+          - PolicyName: 'apigatewaytos3'
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: 'Allow'
+                  Action: 's3:PutObject*'
+                  Resource:
+                    Fn::Join:
+                      - ''
+                      - - Fn::GetAtt: [S3Bucket, Arn]
+                        - '/*'                      
+  Outputs:
+    S3BucketName:
+      Value:
+        Ref: S3Bucket

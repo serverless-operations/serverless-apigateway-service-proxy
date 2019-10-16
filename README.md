@@ -327,6 +327,32 @@ resources:
 
 Source: [AWS::ApiGateway::Method docs](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigateway-method.html#cfn-apigateway-method-authorizationtype)
 
+### Using a Custom IAM Role
+
+By default, the plugin will generate a role with the required permissions for each service type that is configured.
+
+You can configure your own role by setting the `roleArn` attribute:
+
+```yaml
+custom:
+  apiGatewayServiceProxies:
+    - sqs:
+        path: /sqs
+        method: post
+        queueName: { 'Fn::GetAtt': ['SQSQueue', 'QueueName'] }
+        cors: true
+        roleArn: # Optional. A default role is created when not configured
+          Fn::GetAtt: [CustomS3Role, Arn]
+
+resources:
+  Resources:
+    SQSQueue:
+      Type: 'AWS::SQS::Queue'
+    CustomS3Role:
+      # Custom Role definition
+      Type: 'AWS::IAM::Role'
+```
+
 ### Customizing request body mapping templates
 
 #### Kinesis
