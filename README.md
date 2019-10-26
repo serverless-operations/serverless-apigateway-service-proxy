@@ -194,7 +194,7 @@ custom:
         requestParameters:
           # if requestParameters has a 'integration.request.path.object' property you should remove the key setting
           'integration.request.path.object': 'context.requestId'
-          "integration.request.header.cache-control": "'public, max-age=31536000, immutable'"
+          'integration.request.header.cache-control': "'public, max-age=31536000, immutable'"
 ```
 
 ### SNS
@@ -352,6 +352,34 @@ resources:
       # Custom Role definition
       Type: 'AWS::IAM::Role'
 ```
+
+### Customizing API Gateway parameters
+
+The plugin allows one to specify which [parameters the API Gateway method accepts](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigateway-method.html#cfn-apigateway-method-requestparameters).
+
+A common use case is to pass custom data to the integration request:
+
+```yaml
+custom:
+  apiGatewayServiceProxies:
+    - sqs:
+        path: /sqs
+        method: post
+        queueName: { 'Fn::GetAtt': ['SqsQueue', 'QueueName'] }
+        cors: true
+        acceptParameters:
+          'method.request.header.Custom-Header': true
+        requestParameters:
+          'integration.request.querystring.MessageAttribute.1.Name': "'custom-Header'"
+          'integration.request.querystring.MessageAttribute.1.Value.StringValue': 'method.request.header.Custom-Header'
+          'integration.request.querystring.MessageAttribute.1.Value.DataType': "'String'"
+resources:
+  Resources:
+    SqsQueue:
+      Type: 'AWS::SQS::Queue'
+```
+
+Any published SQS message will have the `Custom-Header` value added as a message attribute.
 
 ### Customizing request body mapping templates
 
