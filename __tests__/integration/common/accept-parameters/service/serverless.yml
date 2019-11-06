@@ -1,0 +1,32 @@
+service: accept-parameters-proxy
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+
+plugins:
+  localPath: './../../../../../../'
+  modules:
+    - serverless-apigateway-service-proxy
+
+custom:
+  apiGatewayServiceProxies:
+    - sqs:
+        path: /sqs
+        method: post
+        queueName: { 'Fn::GetAtt': ['SqsQueue', 'QueueName'] }
+        cors: true
+        acceptParameters:
+          'method.request.header.Custom-Header': true
+        requestParameters:
+          'integration.request.querystring.MessageAttribute.1.Name': "'custom-Header'"
+          'integration.request.querystring.MessageAttribute.1.Value.StringValue': 'method.request.header.Custom-Header'
+          'integration.request.querystring.MessageAttribute.1.Value.DataType': "'String'"
+
+resources:
+  Resources:
+    SqsQueue:
+      Type: 'AWS::SQS::Queue'
+  Outputs:
+    SqsQueueUrl:
+      Value: { Ref: SqsQueue }
