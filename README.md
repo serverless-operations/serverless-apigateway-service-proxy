@@ -10,8 +10,10 @@ This Serverless Framework plugin supports the AWS service proxy integration feat
 Run `serverless plugin install` in your Serverless project.
 
 ```bash
-serverless plugin install -n serverless-apigateway-service-proxy
+serverless plugin install -n @hans_seek/serverless-apigateway-service-proxy
 ```
+
+Alternative run (if previous fails) `yarn add @hans_seek/serverless-apigateway-service-proxy`
 
 ## Supported AWS services
 
