@@ -1,22 +1,16 @@
-[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
+![serverless](http://public.serverless.com/badges/v3.svg)
+[![Build Status](https://travis-ci.org/horike37/serverless-apigateway-service-proxy.svg?branch=master)](https://travis-ci.org/horike37/serverless-apigateway-service-proxy) [![npm version](https://badge.fury.io/js/serverless-apigateway-service-proxy.svg)](https://badge.fury.io/js/serverless-apigateway-service-proxy) [![Coverage Status](https://coveralls.io/repos/github/horike37/serverless-apigateway-service-proxy/badge.svg?branch=master)](https://coveralls.io/github/horike37/serverless-apigateway-service-proxy?branch=master) [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 
 # Serverless APIGateway Service Proxy
 
 This Serverless Framework plugin supports the AWS service proxy integration feature of API Gateway. You can directly connect API Gateway to AWS services without Lambda.
-In addition this fork support customized Path overrides to cater more specialized use cases.
 
 ## Install
 
-Run `yarn add @hans_seek/serverless-apigateway-service-proxy` to install the plugin
+Run `serverless plugin install` in your Serverless project.
 
 ```bash
-yarn add @hans_seek/serverless-apigateway-service-proxy
-```
-
-Or if using NPM:
-
-```bash
-npm i @hans_seek/serverless-apigateway-service-proxy --save
+serverless plugin install -n serverless-apigateway-service-proxy
 ```
 
 ## Supported AWS services
@@ -30,13 +24,6 @@ Please pull request if you are intersted in it.
 - SNS
 
 ## How to use
-
-Add the Plugin to your `serverless.yml`
-
-```yaml
-plugins:
-  - '@hans_seek/serverless-apigateway-service-proxy'
-```
 
 Define settings of the AWS services you want to integrate under `custom > apiGatewayServiceProxies` and run `serverless deploy`.
 

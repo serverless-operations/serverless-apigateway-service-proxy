@@ -1,7 +1,7 @@
 {
-  "name": "@hans_seek/serverless-apigateway-service-proxy",
-  "version": "1.3.1",
-  "description": "This is a fork of https://www.npmjs.com/package/serverless-apigateway-service-proxy. The Serverless Framewrok plugin for supporting AWS service proxy integration of API Gateway",
+  "name": "serverless-apigateway-service-proxy",
+  "version": "1.3.0",
+  "description": "The Serverless Framewrok plugin for supporting AWS service proxy integration of API Gateway",
   "main": "lib/index.js",
   "scripts": {
     "lint": "eslint .",
@@ -31,7 +31,7 @@
       "<rootDir>/__tests__/setup-tests.js"
     ]
   },
-  "author": "Hans Roessler",
+  "author": "horike37",
   "license": "MIT",
   "devDependencies": {
     "@commitlint/cli": "^8.1.0",
@@ -61,6 +61,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Hans-Seek/serverless-apigateway-service-proxy.git"
+    "url": "https://github.com/horike37/serverless-apigateway-service-proxy.git"
   }
 }
