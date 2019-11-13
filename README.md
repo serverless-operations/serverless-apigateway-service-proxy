@@ -163,6 +163,17 @@ custom:
         key:
           queryStringParam: key # use query string param
         cors: true
+    
+    - s3:
+        path: /s3/{myKey}
+        method: get
+        action: GetObject
+        objectPrefix: path/to/my/object # Look for s3://{S3Bucket}/path/to/my/object/{myKey}
+        bucket:
+          Ref: S3Bucket
+        key:
+          pathParam: myKey
+        cors: true
 
 resources:
   Resources:
