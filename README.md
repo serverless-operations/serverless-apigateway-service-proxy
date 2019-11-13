@@ -1,19 +1,23 @@
-![serverless](http://public.serverless.com/badges/v3.svg)
-[![Build Status](https://travis-ci.org/horike37/serverless-apigateway-service-proxy.svg?branch=master)](https://travis-ci.org/horike37/serverless-apigateway-service-proxy) [![npm version](https://badge.fury.io/js/serverless-apigateway-service-proxy.svg)](https://badge.fury.io/js/serverless-apigateway-service-proxy) [![Coverage Status](https://coveralls.io/repos/github/horike37/serverless-apigateway-service-proxy/badge.svg?branch=master)](https://coveralls.io/github/horike37/serverless-apigateway-service-proxy?branch=master) [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
+[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 
 # Serverless APIGateway Service Proxy
 
 This Serverless Framework plugin supports the AWS service proxy integration feature of API Gateway. You can directly connect API Gateway to AWS services without Lambda.
+In addition this fork support customized Path overrides to cater more specialized use cases.
 
 ## Install
 
-Run `serverless plugin install` in your Serverless project.
+Run `yarn add @hans_seek/serverless-apigateway-service-proxy` to install the plugin
 
 ```bash
-serverless plugin install -n @hans_seek/serverless-apigateway-service-proxy
+yarn add @hans_seek/serverless-apigateway-service-proxy
 ```
 
-Alternative run (if previous fails) `yarn add @hans_seek/serverless-apigateway-service-proxy`
+Or if using NPM:
+
+```bash
+npm i @hans_seek/serverless-apigateway-service-proxy --save
+```
 
 ## Supported AWS services
 
@@ -26,6 +30,13 @@ Please pull request if you are intersted in it.
 - SNS
 
 ## How to use
+
+Add the Plugin to your `serverless.yml`
+
+```yaml
+plugins:
+  - '@hans_seek/serverless-apigateway-service-proxy'
+```
 
 Define settings of the AWS services you want to integrate under `custom > apiGatewayServiceProxies` and run `serverless deploy`.
 
@@ -198,6 +209,38 @@ custom:
           'integration.request.path.object': 'context.requestId'
           'integration.request.header.cache-control': "'public, max-age=31536000, immutable'"
 ```
+
+#### Customize the Path Override in API Gateway
+
+Added the new customization parameter that lets the user set a custom Path Override in API Gateway other than the `{bucket}/{object}`
+This parameter is optional and if not set, will fall back to `{bucket}/{object}`
+The Path Override will add `{bucket}/` automatically in front
+
+Please keep in mind, that key or path.object still needs to be set at the moment (maybe this will be made optional later on with this)
+
+Usage (With 2 Path Parameters (folder and file and a fixed file extension)):
+
+```yaml
+custom:
+  apiGatewayServiceProxies:
+    - s3:
+        path: /s3/{folder}/{file}
+        method: get
+        action: GetObject
+        pathoverride: '{folder}/{file}.xml'
+        bucket:
+          Ref: S3Bucket
+        cors: true
+
+        requestParameters:
+          # if requestParameters has a 'integration.request.path.object' property you should remove the key setting
+          'integration.request.path.folder': 'method.request.path.folder'
+          'integration.request.path.file': 'method.request.path.file'
+          'integration.request.path.object': 'context.requestId'
+          'integration.request.header.cache-control': "'public, max-age=31536000, immutable'"
+```
+This will result in API Gateway setting the Path Override attribute to `{bucket}/{folder}/{file}.xml`
+So for example if you navigate to the API Gatway endpoint `/language/en` it will fetch the file in S3 from `{bucket}/language/en.xml`
 
 ### SNS
 
