@@ -214,7 +214,7 @@ custom:
         path: /s3/{folder}/{file}
         method: get
         action: GetObject
-        pathoverride: '{folder}/{file}.xml'
+        pathOverride: '{folder}/{file}.xml'
         bucket:
           Ref: S3Bucket
         cors: true
@@ -228,6 +228,30 @@ custom:
 ```
 This will result in API Gateway setting the Path Override attribute to `{bucket}/{folder}/{file}.xml`
 So for example if you navigate to the API Gatway endpoint `/language/en` it will fetch the file in S3 from `{bucket}/language/en.xml`
+
+##### Can use greedy, for deeper Folders
+The forementioned example can also be shortened by a greedy approach. Thanks to @taylorreece for mentioning this.
+
+```yaml
+custom:
+  apiGatewayServiceProxies:
+    - s3:
+        path: /s3/{myPath+}
+        method: get
+        action: GetObject
+        pathOverride: '{myPath}.xml'
+        bucket:
+          Ref: S3Bucket
+        cors: true
+
+        requestParameters:
+          # if requestParameters has a 'integration.request.path.object' property you should remove the key setting
+          'integration.request.path.myPath': 'method.request.path.myPath'
+          'integration.request.path.object': 'context.requestId'
+          'integration.request.header.cache-control': "'public, max-age=31536000, immutable'"
+```
+
+This will translate for example `/s3/a/b/c` to `a/b/c.xml`
 
 ### SNS
 
