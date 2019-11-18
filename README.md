@@ -627,3 +627,36 @@ custom:
 > It is important that the mapping template will return a valid `application/x-www-form-urlencoded` string
 
 Source: [Connect AWS API Gateway directly to SNS using a service integration](https://www.alexdebrie.com/posts/aws-api-gateway-service-proxy/)
+
+### Custom response body mapping templates
+
+You can customize the response body by providing mapping templates for success, server errors (5xx) and client errors (4xx).
+
+> Templates must be in JSON format. If a template isn't provided, the integration response will be returned as-is to the client.
+
+#### Kinesis Example
+
+```yml
+custom:
+  apiGatewayServiceProxies:
+    - kinesis:
+        path: /kinesis
+        method: post
+        streamName: { Ref: 'MyStream' }
+        response:
+          template:
+            success: |
+              {
+                "success": true
+              }
+            serverError: |
+              {
+                "success": false,
+                "errorMessage": "Server Error"
+              }
+            clientError: |
+              {
+                "success": false,
+                "errorMessage": "Client Error"
+              }
+```
