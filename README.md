@@ -3,7 +3,7 @@
 
 # Serverless APIGateway Service Proxy
 
-This Serverless Framewrok plugin supports the AWS service proxy integration feature of API Gateway. You can directly connect API Gateway to AWS services without Lambda.
+This Serverless Framework plugin supports the AWS service proxy integration feature of API Gateway. You can directly connect API Gateway to AWS services without Lambda.
 
 ## TOC
 
@@ -28,7 +28,7 @@ This Serverless Framewrok plugin supports the AWS service proxy integration feat
 
 ## Install
 
-Run `servelress plugin install` in your Serverless project.
+Run `serverless plugin install` in your Serverless project.
 
 ```bash
 serverless plugin install -n serverless-apigateway-service-proxy
@@ -197,6 +197,83 @@ Sample request after deploying.
 ```bash
 curl https://xxxxxx.execute-api.us-east-1.amazonaws.com/dev/s3 -d '{"message": "testtest"}' -H 'Content-Type:application/json'
 ```
+
+#### Customizing request parameters
+
+Similar to the [SQS](#sqs) support, you can customize the default request parameters `serverless.yml` like so:
+
+```yml
+custom:
+  apiGatewayServiceProxies:
+    - s3:
+        path: /s3
+        method: post
+        action: PutObject
+        bucket:
+          Ref: S3Bucket
+        cors: true
+
+        requestParameters:
+          # if requestParameters has a 'integration.request.path.object' property you should remove the key setting
+          'integration.request.path.object': 'context.requestId'
+          'integration.request.header.cache-control': "'public, max-age=31536000, immutable'"
+```
+
+#### Customize the Path Override in API Gateway
+
+Added the new customization parameter that lets the user set a custom Path Override in API Gateway other than the `{bucket}/{object}`
+This parameter is optional and if not set, will fall back to `{bucket}/{object}`
+The Path Override will add `{bucket}/` automatically in front
+
+Please keep in mind, that key or path.object still needs to be set at the moment (maybe this will be made optional later on with this)
+
+Usage (With 2 Path Parameters (folder and file and a fixed file extension)):
+
+```yaml
+custom:
+  apiGatewayServiceProxies:
+    - s3:
+        path: /s3/{folder}/{file}
+        method: get
+        action: GetObject
+        pathOverride: '{folder}/{file}.xml'
+        bucket:
+          Ref: S3Bucket
+        cors: true
+
+        requestParameters:
+          # if requestParameters has a 'integration.request.path.object' property you should remove the key setting
+          'integration.request.path.folder': 'method.request.path.folder'
+          'integration.request.path.file': 'method.request.path.file'
+          'integration.request.path.object': 'context.requestId'
+          'integration.request.header.cache-control': "'public, max-age=31536000, immutable'"
+```
+This will result in API Gateway setting the Path Override attribute to `{bucket}/{folder}/{file}.xml`
+So for example if you navigate to the API Gatway endpoint `/language/en` it will fetch the file in S3 from `{bucket}/language/en.xml`
+
+##### Can use greedy, for deeper Folders
+The forementioned example can also be shortened by a greedy approach. Thanks to @taylorreece for mentioning this.
+
+```yaml
+custom:
+  apiGatewayServiceProxies:
+    - s3:
+        path: /s3/{myPath+}
+        method: get
+        action: GetObject
+        pathOverride: '{myPath}.xml'
+        bucket:
+          Ref: S3Bucket
+        cors: true
+
+        requestParameters:
+          # if requestParameters has a 'integration.request.path.object' property you should remove the key setting
+          'integration.request.path.myPath': 'method.request.path.myPath'
+          'integration.request.path.object': 'context.requestId'
+          'integration.request.header.cache-control': "'public, max-age=31536000, immutable'"
+```
+
+This will translate for example `/s3/a/b/c` to `a/b/c.xml`
 
 ### SNS
 
@@ -449,6 +526,60 @@ resources:
 ```
 
 Source: [AWS::ApiGateway::Method docs](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigateway-method.html#cfn-apigateway-method-authorizationtype)
+
+### Using a Custom IAM Role
+
+By default, the plugin will generate a role with the required permissions for each service type that is configured.
+
+You can configure your own role by setting the `roleArn` attribute:
+
+```yaml
+custom:
+  apiGatewayServiceProxies:
+    - sqs:
+        path: /sqs
+        method: post
+        queueName: { 'Fn::GetAtt': ['SQSQueue', 'QueueName'] }
+        cors: true
+        roleArn: # Optional. A default role is created when not configured
+          Fn::GetAtt: [CustomS3Role, Arn]
+
+resources:
+  Resources:
+    SQSQueue:
+      Type: 'AWS::SQS::Queue'
+    CustomS3Role:
+      # Custom Role definition
+      Type: 'AWS::IAM::Role'
+```
+
+### Customizing API Gateway parameters
+
+The plugin allows one to specify which [parameters the API Gateway method accepts](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigateway-method.html#cfn-apigateway-method-requestparameters).
+
+A common use case is to pass custom data to the integration request:
+
+```yaml
+custom:
+  apiGatewayServiceProxies:
+    - sqs:
+        path: /sqs
+        method: post
+        queueName: { 'Fn::GetAtt': ['SqsQueue', 'QueueName'] }
+        cors: true
+        acceptParameters:
+          'method.request.header.Custom-Header': true
+        requestParameters:
+          'integration.request.querystring.MessageAttribute.1.Name': "'custom-Header'"
+          'integration.request.querystring.MessageAttribute.1.Value.StringValue': 'method.request.header.Custom-Header'
+          'integration.request.querystring.MessageAttribute.1.Value.DataType': "'String'"
+resources:
+  Resources:
+    SqsQueue:
+      Type: 'AWS::SQS::Queue'
+```
+
+Any published SQS message will have the `Custom-Header` value added as a message attribute.
 
 ### Customizing request body mapping templates
 
