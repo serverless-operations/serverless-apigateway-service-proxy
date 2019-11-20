@@ -19,9 +19,6 @@ This Serverless Framework plugin supports the AWS service proxy integration feat
       - [Can use greedy, for deeper Folders](#can-use-greedy--for-deeper-folders)
   - [SNS](#sns)
   - [DynamoDB](#dynamodb)
-    - [Sample request after deploying.](#sample-request-after-deploying)
-      - [PutItem](#putitem)
-      - [UpdateItem](#updateitem)
 - [Common API Gateway features](#common-api-gateway-features)
   - [Enabling CORS](#enabling-cors)
   - [Adding Authorization](#adding-authorization)
@@ -370,7 +367,7 @@ resources:
           WriteCapacityUnits: 1
 ```
 
-#### Sample request after deploying.
+Sample request after deploying.
 
 ```bash
 curl -XPUT https://xxxxxxx.execute-api.us-east-1.amazonaws.com/dev/dynamodb/<hashKey>/<sortkey> \
