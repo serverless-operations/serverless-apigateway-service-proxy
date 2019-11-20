@@ -12,11 +12,14 @@ plugins:
 custom:
   apiGatewayServiceProxies:
     - dynamodb:
-        path: /dynamodb
+        path: /dynamodb/{id}
         method: post
         tableName:
           Ref: MyTestTable
-        hashKey: 'id'
+        action: PutItem
+        hashKey:
+          pathParam: 'id'
+          attributeType: 'S'
         cors: true
 
 resources:
@@ -26,12 +29,10 @@ resources:
       Properties:
         TableName: MyTestTable
         AttributeDefinitions:
-          -
-            AttributeName: id
+          - AttributeName: id
             AttributeType: S
         KeySchema:
-          -
-            AttributeName: id
+          - AttributeName: id
             KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 1

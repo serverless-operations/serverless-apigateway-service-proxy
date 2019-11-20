@@ -6,7 +6,7 @@ const _ = require('lodash')
 const {
   deployWithRandomStage,
   removeService,
-  getDynamodbItem,
+  getDynamodbItemWithHashKeyAndRangeKey,
   putDynamodbItem,
   cleanUpDynamodbItems
 } = require('../../../utils')
@@ -16,7 +16,9 @@ describe('Multiple Dynamodb Proxies Integration Test', () => {
   let stage
   const tableName = 'MyMuTestTable'
   const hashKeyAttribute = 'id'
+  const rangeKeyAttribute = 'sort'
   const hashKey = { S: 'myid' }
+  const sortKey = { S: 'mykey' }
   const config = '__tests__/integration/dynamodb/multiple-integrations/service/serverless.yml'
 
   beforeAll(async () => {
@@ -31,11 +33,11 @@ describe('Multiple Dynamodb Proxies Integration Test', () => {
   })
 
   afterEach(async () => {
-    await cleanUpDynamodbItems(tableName, hashKeyAttribute)
+    await cleanUpDynamodbItems(tableName, hashKeyAttribute, rangeKeyAttribute)
   })
 
   it('should get correct response from dynamodb PutItem action endpoint', async () => {
-    const putEndpoint = `${endpoint}/dynamodb/${hashKey.S}`
+    const putEndpoint = `${endpoint}/dynamodb/${hashKey.S}/${sortKey.S}`
 
     const putResponse = await fetch(putEndpoint, {
       method: 'PUT',
@@ -45,10 +47,17 @@ describe('Multiple Dynamodb Proxies Integration Test', () => {
     expect(putResponse.headers.get('access-control-allow-origin')).to.deep.equal('*')
     expect(putResponse.status).to.be.equal(200)
 
-    const item = await getDynamodbItem(tableName, hashKeyAttribute, hashKey)
+    const item = await getDynamodbItemWithHashKeyAndRangeKey(
+      tableName,
+      hashKeyAttribute,
+      hashKey,
+      rangeKeyAttribute,
+      sortKey
+    )
     expect(item).to.be.deep.equal({
       Item: {
         [hashKeyAttribute]: hashKey,
+        [rangeKeyAttribute]: sortKey,
         message: { S: 'test' }
       }
     })
@@ -57,9 +66,13 @@ describe('Multiple Dynamodb Proxies Integration Test', () => {
   it('should get correct response from dynamodb GetItem action endpoint', async () => {
     await putDynamodbItem(
       tableName,
-      _.merge({}, { [hashKeyAttribute]: hashKey }, { message: { S: 'testtest' } })
+      _.merge(
+        {},
+        { [hashKeyAttribute]: hashKey, [rangeKeyAttribute]: sortKey },
+        { message: { S: 'testtest' } }
+      )
     )
-    const getEndpoint = `${endpoint}/dynamodb?id=${hashKey.S}`
+    const getEndpoint = `${endpoint}/dynamodb?id=${hashKey.S}&sort=${sortKey.S}`
 
     const getResponse = await fetch(getEndpoint, {
       method: 'GET',
@@ -71,67 +84,21 @@ describe('Multiple Dynamodb Proxies Integration Test', () => {
     const item = await getResponse.json()
     expect(item).to.be.deep.equal({
       id: hashKey.S,
+      sort: sortKey.S,
       message: 'testtest'
-    })
-  })
-
-  it('should get correct response from dynamodb UpdateItem action endpoint', async () => {
-    await putDynamodbItem(
-      tableName,
-      _.merge({}, { [hashKeyAttribute]: hashKey }, { message: { S: 'testtesttest' } })
-    )
-    const updateEndpoint = `${endpoint}/dynamodb/${hashKey.S}`
-
-    const updateResponse1 = await fetch(updateEndpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        UpdateExpression: 'ADD QuantityOnHand :q',
-        ExpressionAttributeValues: { ':q': { N: '5' } }
-      })
-    })
-    expect(updateResponse1.headers.get('access-control-allow-origin')).to.deep.equal('*')
-    expect(updateResponse1.status).to.be.equal(200)
-
-    const item1 = await getDynamodbItem(tableName, hashKeyAttribute, hashKey)
-    expect(item1).to.be.deep.equal({
-      Item: {
-        [hashKeyAttribute]: hashKey,
-        QuantityOnHand: { N: '5' },
-        message: { S: 'testtesttest' }
-      }
-    })
-
-    const updateResponse2 = await fetch(updateEndpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        UpdateExpression: 'SET #n = :newName',
-        ExpressionAttributeValues: { ':newName': { S: 'myname' } },
-        ExpressionAttributeNames: {
-          '#n': 'name'
-        }
-      })
-    })
-    expect(updateResponse2.headers.get('access-control-allow-origin')).to.deep.equal('*')
-    expect(updateResponse2.status).to.be.equal(200)
-    const item2 = await getDynamodbItem(tableName, hashKeyAttribute, hashKey)
-    expect(item2).to.be.deep.equal({
-      Item: {
-        [hashKeyAttribute]: hashKey,
-        QuantityOnHand: { N: '5' },
-        name: { S: 'myname' },
-        message: { S: 'testtesttest' }
-      }
     })
   })
 
   it('should get correct response from dynamodb DeleteItem action endpoint', async () => {
     await putDynamodbItem(
       tableName,
-      _.merge({}, { [hashKeyAttribute]: hashKey }, { message: { S: 'test' } })
+      _.merge(
+        {},
+        { [hashKeyAttribute]: hashKey, [rangeKeyAttribute]: sortKey },
+        { message: { S: 'test' } }
+      )
     )
-    const deleteEndpoint = `${endpoint}/dynamodb/${hashKey.S}`
+    const deleteEndpoint = `${endpoint}/dynamodb/${hashKey.S}?sort=${sortKey.S}`
 
     const deleteResponse = await fetch(deleteEndpoint, {
       method: 'DELETE',
@@ -140,7 +107,13 @@ describe('Multiple Dynamodb Proxies Integration Test', () => {
     expect(deleteResponse.headers.get('access-control-allow-origin')).to.deep.equal('*')
     expect(deleteResponse.status).to.be.equal(200)
 
-    const item = await getDynamodbItem(tableName, hashKeyAttribute, hashKey)
+    const item = await getDynamodbItemWithHashKeyAndRangeKey(
+      tableName,
+      hashKeyAttribute,
+      hashKey,
+      rangeKeyAttribute,
+      sortKey
+    )
     expect(item).to.be.empty
   })
 })

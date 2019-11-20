@@ -2,7 +2,11 @@
 
 const expect = require('chai').expect
 const fetch = require('node-fetch')
-const { deployWithRandomStage, removeService, getDynamodbItem } = require('../../../utils')
+const {
+  deployWithRandomStage,
+  removeService,
+  getDynamodbItemWithHashKey
+} = require('../../../utils')
 
 describe('Single dynamodb Proxy Integration Test', () => {
   let endpoint
@@ -23,7 +27,7 @@ describe('Single dynamodb Proxy Integration Test', () => {
   })
 
   it('should get correct response from dynamodb proxy endpoint', async () => {
-    const testEndpoint = `${endpoint}/dynamodb`
+    const testEndpoint = `${endpoint}/dynamodb/id`
 
     const response = await fetch(testEndpoint, {
       method: 'POST',
@@ -32,12 +36,11 @@ describe('Single dynamodb Proxy Integration Test', () => {
     })
     expect(response.headers.get('access-control-allow-origin')).to.deep.equal('*')
     expect(response.status).to.be.equal(200)
-    const body = await response.json()
 
-    const item = await getDynamodbItem(tableName, hashKeyAttribute, { S: body.id })
+    const item = await getDynamodbItemWithHashKey(tableName, hashKeyAttribute, { S: 'id' })
     expect(item).to.be.deep.equal({
       Item: {
-        id: { S: body.id },
+        id: { S: 'id' },
         item1: { S: 'item1' },
         item2: { S: 'item2' }
       }
