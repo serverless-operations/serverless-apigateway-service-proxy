@@ -321,7 +321,7 @@ custom:
         rangeKey: # required if also using sort key. set pathParam or queryStringParam.
           pathParam: sort
           attributeType: S
-        action: PutItem # specify actions to the table what you want
+        action: PutItem # specify action to the table what you want
         condition: attribute_not_exists(Id) # optional Condition Expressions parameter for the table
         cors: true
     - dynamodb:
