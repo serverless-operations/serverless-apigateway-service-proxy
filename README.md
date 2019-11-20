@@ -306,7 +306,7 @@ curl https://xxxxxx.execute-api.us-east-1.amazonaws.com/dev/sns -d '{"message": 
 
 ### DynamoDB
 
-Sample syntax for DynamoDB proxy in `serverless.yml`. Currently, the supported (DynamoDB Operations)[https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Operations.html] are `PutItem`, `GetItem` and `DeleteItem`.
+Sample syntax for DynamoDB proxy in `serverless.yml`. Currently, the supported [DynamoDB Operations](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Operations.html) are `PutItem`, `GetItem` and `DeleteItem`.
 
 ```yaml
 custom:
