@@ -10,21 +10,26 @@ This Serverless Framework plugin supports the AWS service proxy integration feat
 - [Install](#install)
 - [Supported AWS services](#supported-aws-services)
 - [How to use](#how-to-use)
-  * [Kinesis](#kinesis)
-  * [SQS](#sqs)
-    + [Customizing request parameters](#customizing-request-parameters)
-  * [S3](#s3)
-  * [SNS](#sns)
-  * [DynamoDB](#dynamodb)
-    + [Sample request after deploying.](#sample-request-after-deploying)
+  - [Kinesis](#kinesis)
+  - [SQS](#sqs)
+    - [Customizing request parameters](#customizing-request-parameters)
+  - [S3](#s3)
+    - [Customizing request parameters](#customizing-request-parameters-1)
+    - [Customize the Path Override in API Gateway](#customize-the-path-override-in-api-gateway)
+      - [Can use greedy, for deeper Folders](#can-use-greedy--for-deeper-folders)
+  - [SNS](#sns)
+  - [DynamoDB](#dynamodb)
+    - [Sample request after deploying.](#sample-request-after-deploying)
       - [PutItem](#putitem)
       - [UpdateItem](#updateitem)
 - [Common API Gateway features](#common-api-gateway-features)
-  * [Enabling CORS](#enabling-cors)
-  * [Adding Authorization](#adding-authorization)
-  * [Customizing request body mapping templates](#customizing-request-body-mapping-templates)
-    + [Kinesis](#kinesis-1)
-    + [SNS](#sns-1)
+  - [Enabling CORS](#enabling-cors)
+  - [Adding Authorization](#adding-authorization)
+  - [Using a Custom IAM Role](#using-a-custom-iam-role)
+  - [Customizing API Gateway parameters](#customizing-api-gateway-parameters)
+  - [Customizing request body mapping templates](#customizing-request-body-mapping-templates)
+    - [Kinesis](#kinesis-1)
+    - [SNS](#sns-1)
 
 ## Install
 
@@ -248,10 +253,12 @@ custom:
           'integration.request.path.object': 'context.requestId'
           'integration.request.header.cache-control': "'public, max-age=31536000, immutable'"
 ```
+
 This will result in API Gateway setting the Path Override attribute to `{bucket}/{folder}/{file}.xml`
 So for example if you navigate to the API Gatway endpoint `/language/en` it will fetch the file in S3 from `{bucket}/language/en.xml`
 
 ##### Can use greedy, for deeper Folders
+
 The forementioned example can also be shortened by a greedy approach. Thanks to @taylorreece for mentioning this.
 
 ```yaml
@@ -302,55 +309,31 @@ curl https://xxxxxx.execute-api.us-east-1.amazonaws.com/dev/sns -d '{"message": 
 
 ### DynamoDB
 
-The (DynamoDB Operation)[https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Operations.html] is automatically mapped by the `method` with following HTTP specification if you omit the `action`.
-
-| Method | Mapped action | Note |
-----|----|----
-| post | PutItem | hashkey is set apigateway requestid automatically by default |
-| put | PutItem | hashkey is set `pathParam` or `queryStringParam` |
-| patch | UpdateItem ||
-| get | GetItem ||
-| delete | DeleteItem ||
-
-Sample syntax for DynamoDB proxy in `serverless.yml`.
+Sample syntax for DynamoDB proxy in `serverless.yml`. Currently, the supported (DynamoDB Operations)[https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Operations.html] are `PutItem`, `GetItem` and `DeleteItem`.
 
 ```yaml
 custom:
   apiGatewayServiceProxies:
     - dynamodb:
-        path: /dynamodb
-        method: post
-        tableName: { Ref: 'YourTable' }
-        hashKey: 'id' # You must define hashKey attribute with `post` method
-        cors: true
-    - dynamodb:
-        path: /dynamodb/{id}
+        path: /dynamodb/{id}/{sort}
         method: put
         tableName: { Ref: 'YourTable' }
-        hashKey:
+        hashKey: # set pathParam or queryStringParam as a partitionkey.
           pathParam: id
           attributeType: S
-        action: PutItem # optional
-        cors: true
-    - dynamodb:
-        path: /dynamodb/{id}/{sort}
-        method: patch
-        tableName: { Ref: 'YourTable' }
-        hashKey:
-          pathParam: id
-          attributeType: S
-        rangeKey:
+        rangeKey: # required if also using sort key. set pathParam or queryStringParam.
           pathParam: sort
           attributeType: S
-        action: UpdateItem
+        action: PutItem # specify actions to the table what you want
+        condition: attribute_not_exists(Id) # optional Condition Expressions parameter for the table
         cors: true
     - dynamodb:
         path: /dynamodb
         method: get
         tableName: { Ref: 'YourTable' }
         hashKey:
-          queryStringParam: id
-          attributeType: N
+          queryStringParam: id # use query string parameter
+          attributeType: S
         rangeKey:
           queryStringParam: sort
           attributeType: S
@@ -373,18 +356,14 @@ resources:
       Properties:
         TableName: YourTable
         AttributeDefinitions:
-          -
-            AttributeName: id
+          - AttributeName: id
             AttributeType: S
-          -
-            AttributeName: sort
+          - AttributeName: sort
             AttributeType: S
         KeySchema:
-          -
-            AttributeName: id
+          - AttributeName: id
             KeyType: HASH
-          -
-            AttributeName: sort
+          - AttributeName: sort
             KeyType: RANGE
         ProvisionedThroughput:
           ReadCapacityUnits: 1
@@ -393,33 +372,10 @@ resources:
 
 #### Sample request after deploying.
 
-##### PutItem
 ```bash
-curl -XPUT https://xxxxxxx.execute-api.us-east-1.amazonaws.com/dev/dynamodb/<hashKey> \
+curl -XPUT https://xxxxxxx.execute-api.us-east-1.amazonaws.com/dev/dynamodb/<hashKey>/<sortkey> \
  -d '{"name":{"S":"john"},"address":{"S":"xxxxx"}}' \
  -H 'Content-Type:application/json'
-```
-
-##### UpdateItem
-```bash
-curl -XPUT https://xxxxxxx.execute-api.us-east-1.amazonaws.com/dev/dynamodb/<hashKey>/<rangeKey> \
- -d <Body> \
- -H 'Content-Type:application/json'
-```
-
-Request body
-```json
-{
-  "UpdateExpression": "SET #n = :newName",
-  "ExpressionAttributeValues": {
-      ":newName": {
-          "S": "michel"
-      }
-  },
-  "ExpressionAttributeNames": {
-    "#n": "name"
-  }
-}
 ```
 
 ## Common API Gateway features
