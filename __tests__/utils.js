@@ -9,6 +9,7 @@ const aws = require('aws-sdk')
 const s3 = new aws.S3()
 
 const region = 'us-east-1'
+const dynamodb = new aws.DynamoDB({ region })
 const cloudformation = new aws.CloudFormation({ region })
 
 function getApiGatewayEndpoint(outputs) {
@@ -23,6 +24,67 @@ async function getStackOutputs(stackName) {
   const values = stack.Outputs.map((x) => x.OutputValue)
 
   return _.zipObject(keys, values)
+}
+
+async function getDynamodbItemWithHashKey(tableName, hashKeyAttribute, hashKey) {
+  return await dynamodb
+    .getItem({
+      Key: {
+        [hashKeyAttribute]: hashKey
+      },
+      TableName: tableName
+    })
+    .promise()
+}
+
+async function getDynamodbItemWithHashKeyAndRangeKey(
+  tableName,
+  hashKeyAttribute,
+  hashKey,
+  rangeKeyAttribute,
+  rangeKey
+) {
+  return await dynamodb
+    .getItem({
+      Key: {
+        [hashKeyAttribute]: hashKey,
+        [rangeKeyAttribute]: rangeKey
+      },
+      TableName: tableName
+    })
+    .promise()
+}
+
+async function putDynamodbItem(tableName, item) {
+  await dynamodb
+    .putItem({
+      Item: item,
+      TableName: tableName
+    })
+    .promise()
+}
+
+async function cleanUpDynamodbItems(tableName, hashKeyAttribute, rangeKeyAttribute) {
+  const items = await dynamodb.scan({ TableName: tableName }).promise()
+  if (items.Count > 0) {
+    await Promise.all(
+      items.Items.map(async (item) => {
+        const key = {
+          [hashKeyAttribute]: item[hashKeyAttribute]
+        }
+
+        if (rangeKeyAttribute) {
+          key[rangeKeyAttribute] = item[rangeKeyAttribute]
+        }
+        await dynamodb
+          .deleteItem({
+            Key: key,
+            TableName: tableName
+          })
+          .promise()
+      })
+    )
+  }
 }
 
 async function getS3Object(bucket, key) {
@@ -77,5 +139,9 @@ module.exports = {
   removeService,
   deployWithRandomStage,
   getS3Object,
-  deleteS3Object
+  deleteS3Object,
+  getDynamodbItemWithHashKey,
+  getDynamodbItemWithHashKeyAndRangeKey,
+  putDynamodbItem,
+  cleanUpDynamodbItems
 }

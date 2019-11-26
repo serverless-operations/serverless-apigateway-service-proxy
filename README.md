@@ -5,6 +5,29 @@
 
 This Serverless Framework plugin supports the AWS service proxy integration feature of API Gateway. You can directly connect API Gateway to AWS services without Lambda.
 
+## TOC
+
+- [Install](#install)
+- [Supported AWS services](#supported-aws-services)
+- [How to use](#how-to-use)
+  - [Kinesis](#kinesis)
+  - [SQS](#sqs)
+    - [Customizing request parameters](#customizing-request-parameters)
+  - [S3](#s3)
+    - [Customizing request parameters](#customizing-request-parameters-1)
+    - [Customize the Path Override in API Gateway](#customize-the-path-override-in-api-gateway)
+      - [Can use greedy, for deeper Folders](#can-use-greedy--for-deeper-folders)
+  - [SNS](#sns)
+  - [DynamoDB](#dynamodb)
+- [Common API Gateway features](#common-api-gateway-features)
+  - [Enabling CORS](#enabling-cors)
+  - [Adding Authorization](#adding-authorization)
+  - [Using a Custom IAM Role](#using-a-custom-iam-role)
+  - [Customizing API Gateway parameters](#customizing-api-gateway-parameters)
+  - [Customizing request body mapping templates](#customizing-request-body-mapping-templates)
+    - [Kinesis](#kinesis-1)
+    - [SNS](#sns-1)
+
 ## Install
 
 Run `serverless plugin install` in your Serverless project.
@@ -22,6 +45,7 @@ Please pull request if you are intersted in it.
 - SQS
 - S3
 - SNS
+- DynamoDB
 
 ## How to use
 
@@ -226,10 +250,12 @@ custom:
           'integration.request.path.object': 'context.requestId'
           'integration.request.header.cache-control': "'public, max-age=31536000, immutable'"
 ```
+
 This will result in API Gateway setting the Path Override attribute to `{bucket}/{folder}/{file}.xml`
 So for example if you navigate to the API Gatway endpoint `/language/en` it will fetch the file in S3 from `{bucket}/language/en.xml`
 
 ##### Can use greedy, for deeper Folders
+
 The forementioned example can also be shortened by a greedy approach. Thanks to @taylorreece for mentioning this.
 
 ```yaml
@@ -276,6 +302,77 @@ Sample request after deploying.
 
 ```bash
 curl https://xxxxxx.execute-api.us-east-1.amazonaws.com/dev/sns -d '{"message": "testtest"}' -H 'Content-Type:application/json'
+```
+
+### DynamoDB
+
+Sample syntax for DynamoDB proxy in `serverless.yml`. Currently, the supported [DynamoDB Operations](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Operations.html) are `PutItem`, `GetItem` and `DeleteItem`.
+
+```yaml
+custom:
+  apiGatewayServiceProxies:
+    - dynamodb:
+        path: /dynamodb/{id}/{sort}
+        method: put
+        tableName: { Ref: 'YourTable' }
+        hashKey: # set pathParam or queryStringParam as a partitionkey.
+          pathParam: id
+          attributeType: S
+        rangeKey: # required if also using sort key. set pathParam or queryStringParam.
+          pathParam: sort
+          attributeType: S
+        action: PutItem # specify action to the table what you want
+        condition: attribute_not_exists(Id) # optional Condition Expressions parameter for the table
+        cors: true
+    - dynamodb:
+        path: /dynamodb
+        method: get
+        tableName: { Ref: 'YourTable' }
+        hashKey:
+          queryStringParam: id # use query string parameter
+          attributeType: S
+        rangeKey:
+          queryStringParam: sort
+          attributeType: S
+        action: GetItem
+        cors: true
+    - dynamodb:
+        path: /dynamodb/{id}
+        method: delete
+        tableName: { Ref: 'YourTable' }
+        hashKey:
+          pathParam: id
+          attributeType: S
+        action: DeleteItem
+        cors: true
+
+resources:
+  Resources:
+    YourTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: YourTable
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: sort
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+          - AttributeName: sort
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+```
+
+Sample request after deploying.
+
+```bash
+curl -XPUT https://xxxxxxx.execute-api.us-east-1.amazonaws.com/dev/dynamodb/<hashKey>/<sortkey> \
+ -d '{"name":{"S":"john"},"address":{"S":"xxxxx"}}' \
+ -H 'Content-Type:application/json'
 ```
 
 ## Common API Gateway features
