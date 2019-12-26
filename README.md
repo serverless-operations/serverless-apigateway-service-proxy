@@ -22,6 +22,7 @@ This Serverless Framework plugin supports the AWS service proxy integration feat
 - [Common API Gateway features](#common-api-gateway-features)
   - [Enabling CORS](#enabling-cors)
   - [Adding Authorization](#adding-authorization)
+  - [Enabling API Token Authentication](#enabling-api-token-authentication)
   - [Using a Custom IAM Role](#using-a-custom-iam-role)
   - [Customizing API Gateway parameters](#customizing-api-gateway-parameters)
   - [Customizing request body mapping templates](#customizing-request-body-mapping-templates)
