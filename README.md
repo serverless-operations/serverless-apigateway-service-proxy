@@ -480,6 +480,35 @@ resources:
 
 Source: [AWS::ApiGateway::Method docs](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigateway-method.html#cfn-apigateway-method-authorizationtype)
 
+
+
+### Enabling API Token Authentication
+
+You can indicate whether the method requires clients to submit a valid API key using `private` flag:
+
+```yml
+custom:
+  apiGatewayServiceProxies:
+    - sqs:
+        path: /sqs
+        method: post
+        queueName: { 'Fn::GetAtt': ['SQSQueue', 'QueueName'] }
+        cors: true
+        private: true
+
+resources:
+  Resources:
+    SQSQueue:
+      Type: 'AWS::SQS::Queue'
+```
+
+which is the same syntax used in Serverless framework.
+
+Source: [Setting API keys for your Rest API](https://serverless.com/framework/docs/providers/aws/events/apigateway/#setting-api-keys-for-your-rest-api)
+
+Source: [AWS::ApiGateway::Method docs](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigateway-method.html#cfn-apigateway-method-apikeyrequired)
+
+
 ### Using a Custom IAM Role
 
 By default, the plugin will generate a role with the required permissions for each service type that is configured.
