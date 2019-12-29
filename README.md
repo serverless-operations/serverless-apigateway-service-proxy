@@ -22,6 +22,7 @@ This Serverless Framework plugin supports the AWS service proxy integration feat
 - [Common API Gateway features](#common-api-gateway-features)
   - [Enabling CORS](#enabling-cors)
   - [Adding Authorization](#adding-authorization)
+  - [Enabling API Token Authentication](#enabling-api-token-authentication)
   - [Using a Custom IAM Role](#using-a-custom-iam-role)
   - [Customizing API Gateway parameters](#customizing-api-gateway-parameters)
   - [Customizing request body mapping templates](#customizing-request-body-mapping-templates)
@@ -479,6 +480,35 @@ resources:
 ```
 
 Source: [AWS::ApiGateway::Method docs](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigateway-method.html#cfn-apigateway-method-authorizationtype)
+
+
+
+### Enabling API Token Authentication
+
+You can indicate whether the method requires clients to submit a valid API key using `private` flag:
+
+```yml
+custom:
+  apiGatewayServiceProxies:
+    - sqs:
+        path: /sqs
+        method: post
+        queueName: { 'Fn::GetAtt': ['SQSQueue', 'QueueName'] }
+        cors: true
+        private: true
+
+resources:
+  Resources:
+    SQSQueue:
+      Type: 'AWS::SQS::Queue'
+```
+
+which is the same syntax used in Serverless framework.
+
+Source: [Serverless: Setting API keys for your Rest API](https://serverless.com/framework/docs/providers/aws/events/apigateway/#setting-api-keys-for-your-rest-api)
+
+Source: [AWS::ApiGateway::Method docs](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigateway-method.html#cfn-apigateway-method-apikeyrequired)
+
 
 ### Using a Custom IAM Role
 
