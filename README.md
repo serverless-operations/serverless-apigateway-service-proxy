@@ -19,6 +19,7 @@ This Serverless Framework plugin supports the AWS service proxy integration feat
       - [Can use greedy, for deeper Folders](#can-use-greedy--for-deeper-folders)
   - [SNS](#sns)
   - [DynamoDB](#dynamodb)
+  - [EventBridge](#eventbridge)
 - [Common API Gateway features](#common-api-gateway-features)
   - [Enabling CORS](#enabling-cors)
   - [Adding Authorization](#adding-authorization)
@@ -47,6 +48,7 @@ Please pull request if you are intersted in it.
 - S3
 - SNS
 - DynamoDB
+- EventBridge
 
 ## How to use
 
@@ -374,6 +376,50 @@ Sample request after deploying.
 curl -XPUT https://xxxxxxx.execute-api.us-east-1.amazonaws.com/dev/dynamodb/<hashKey>/<sortkey> \
  -d '{"name":{"S":"john"},"address":{"S":"xxxxx"}}' \
  -H 'Content-Type:application/json'
+```
+
+
+### EventBridge
+
+Sample syntax for EventBridge proxy in `serverless.yml`.
+
+```yaml
+custom:
+  apiGatewayServiceProxies:
+    - eventbridge: # source and detailType is set to apigateway requestid by default
+        path: /eventbridge
+        method: post
+        eventBusName: { Ref: 'YourBusName' }
+        cors: true
+    - eventbridge:  # source and detailType are hardcoded
+        path: /eventbridge
+        method: post
+        source: 'hardcoded_source'
+        detailType: 'hardcoded_detailType'
+        eventBusName: { Ref: 'YourBusName' }
+        cors: true
+    - eventbridge:  # source and detailType as path parameters
+        path: /eventbridge/{detailTypeKey}/{sourceKey}
+        method: post
+        detailType:
+          pathParam: detailTypeKey
+        source:
+          pathParam: sourceKey
+        eventBusName: { Ref: 'YourBusName' }
+        cors: true
+
+resources:
+  Resources:
+    YourBus:
+      Type: AWS::Events::EventBus
+      Properties:
+        Name: YourEventBus
+```
+
+Sample request after deploying.
+
+```bash
+curl https://xxxxxxx.execute-api.us-east-1.amazonaws.com/dev/eventbridge -d '{"message": "some data"}'  -H 'Content-Type:application/json'
 ```
 
 ## Common API Gateway features
