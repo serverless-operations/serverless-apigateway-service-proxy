@@ -39,11 +39,12 @@ custom:
           queryStringParam: mySourceKey
         eventBusName: { Ref: 'YourBus' }
         cors: true
-    # set value of detailType and source to api event id by default
+    # set value of detailType api event id by default
     - eventbridge:
         path: /eventbridge4
         method: post
         eventBusName: { Ref: 'YourBus' }
+        source: mySourceName
         cors: true
 
 resources:
