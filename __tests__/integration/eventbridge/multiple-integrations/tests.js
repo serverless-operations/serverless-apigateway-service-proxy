@@ -78,4 +78,25 @@ describe('Multiple EventBridge Proxy Integrations Test', () => {
     expect(body).to.have.own.property('FailedEntryCount')
     expect(body.FailedEntryCount).to.equal(0)
   })
+
+  it('should get correct response from eventbridge proxy endpoints with bodyParams', async () => {
+    const testEndpoint = `${endpoint}/eventbridge5`
+    const response = await fetch(testEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        data: {
+          detail: `{"data": "data for event bus"}`,
+          detailType: `myDetailType`,
+          source: `mySource`
+        }
+      })
+    })
+    expect(response.headers.get('access-control-allow-origin')).to.deep.equal('*')
+    expect(response.status).to.be.equal(200)
+    const body = await response.json()
+    expect(body).to.have.own.property('Entries')
+    expect(body).to.have.own.property('FailedEntryCount')
+    expect(body.FailedEntryCount).to.equal(0)
+  })
 })
