@@ -386,12 +386,7 @@ Sample syntax for EventBridge proxy in `serverless.yml`.
 ```yaml
 custom:
   apiGatewayServiceProxies:
-    - eventbridge: # source and detailType is set to apigateway requestid by default
-        path: /eventbridge
-        method: post
-        eventBusName: { Ref: 'YourBusName' }
-        cors: true
-    - eventbridge:  # source and detailType are hardcoded
+    - eventbridge:  # source and detailType are hardcoded; detail defaults to POST body
         path: /eventbridge
         method: post
         source: 'hardcoded_source'
@@ -405,6 +400,17 @@ custom:
           pathParam: detailTypeKey
         source:
           pathParam: sourceKey
+        eventBusName: { Ref: 'YourBusName' }
+        cors: true
+    - eventbridge:  # source, detail, and detailType as body parameters
+        path: /eventbridge/{detailTypeKey}/{sourceKey}
+        method: post
+        detailType:
+          bodyParam: data.detailType
+        source:
+          bodyParam: data.source
+        detail:
+          bodyParam: data.detail
         eventBusName: { Ref: 'YourBusName' }
         cors: true
 
