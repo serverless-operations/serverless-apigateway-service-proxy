@@ -46,6 +46,18 @@ custom:
         eventBusName: { Ref: 'YourBus' }
         source: mySourceName
         cors: true
+    # set value of detail, detailType and source as bodyParam
+    - eventbridge:
+        path: /eventbridge5
+        method: post
+        eventBusName: { Ref: 'YourBus' }
+        source:
+          bodyParam: data.source
+        detailType:
+          bodyParam: data.detailType
+        detail:
+          bodyParam: data.detail
+        cors: true        
 
 resources:
   Resources:
