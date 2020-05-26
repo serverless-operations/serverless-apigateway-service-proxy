@@ -1,0 +1,55 @@
+service: multiple-eventbridge-proxy
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+
+plugins:
+  localPath: './../../../../../../'
+  modules:
+    - serverless-apigateway-service-proxy
+
+custom:
+  apiGatewayServiceProxies:
+    # set static detailType and source
+    - eventbridge:
+        path: /eventbridge1
+        method: post
+        detailType: 'hardcordeddetailtype'
+        source: 'hardcodedsource'
+        eventBusName: { Ref: 'YourBus' }
+        cors: true
+    # set detailType and source as path parameter
+    - eventbridge:
+        path: /eventbridge2/{myDetailType}/{mySource} 
+        method: post
+        detailType:
+          pathParam: myDetailType
+        source:
+          pathParam: mySource
+        eventBusName: { Ref: 'YourBus' }
+        cors: true
+    # set detailType and source as query parameter
+    - eventbridge:
+        path: /eventbridge3
+        method: post
+        detailType:
+          queryStringParam: myDetailTypeKey
+        source:
+          queryStringParam: mySourceKey
+        eventBusName: { Ref: 'YourBus' }
+        cors: true
+    # set value of detailType api event id by default
+    - eventbridge:
+        path: /eventbridge4
+        method: post
+        eventBusName: { Ref: 'YourBus' }
+        source: mySourceName
+        cors: true
+
+resources:
+  Resources:
+    YourBus:
+      Type: AWS::Events::EventBus
+      Properties:
+        Name: YourEventBus-${self:provider.stage}-multi
