@@ -28,6 +28,7 @@ This Serverless Framework plugin supports the AWS service proxy integration feat
   - [Customizing API Gateway parameters](#customizing-api-gateway-parameters)
   - [Customizing request body mapping templates](#customizing-request-body-mapping-templates)
     - [Kinesis](#kinesis-1)
+    - [SQS](#sqs-1)
     - [SNS](#sns-1)
 
 ## Install
@@ -154,6 +155,10 @@ custom:
           'integration.request.querystring.MessageAttribute.2.Value.StringValue': 'context.identity.cognitoAuthenticationProvider'
           'integration.request.querystring.MessageAttribute.2.Value.DataType': "'String'"
 ```
+
+#### Customizing request body mapping templates
+
+See the [SQS section](#sqs-1) under [Customizing request body mapping templates](#customizing-request-body-mapping-templates)
 
 ### S3
 
@@ -652,6 +657,36 @@ custom:
 > It is important that the mapping template will return a valid `application/json` string
 
 Source: [How to connect SNS to Kinesis for cross-account delivery via API Gateway](https://theburningmonk.com/2019/07/how-to-connect-sns-to-kinesis-for-cross-account-delivery-via-api-gateway/)
+
+#### SQS
+
+Customizing SQS request templates requires us to force all requests to use an `application/x-www-form-urlencoded` style body. The plugin sets the `Content-Type` to `application/x-www-form-urlencoded` for you, but API Gateway will still look for the template under the `application/json` request template type, so that is where you need to configure you request body in `serverless.yml`:
+
+```yml
+custom:
+  apiGatewayServiceProxies:
+    - sqs:
+        path: /{version}/event/receiver
+        method: post
+        queueName: { 'Fn::GetAtt': ['SqsQueue', 'QueueName'] }
+        request:
+          template:
+            application/json: |-
+              #set ($body = $util.parseJson($input.body))
+              Action=SendMessage##
+              &MessageGroupId=$util.urlEncode($body.event_type)##
+              &MessageDeduplicationId=$util.urlEncode($body.event_id)##
+              &MessageAttribute.1.Name=$util.urlEncode("X-Custom-Signature")##
+              &MessageAttribute.1.Value.DataType=String##
+              &MessageAttribute.1.Value.StringValue=$util.urlEncode($input.params("X-Custom-Signature"))##
+              &MessageBody=$util.urlEncode($input.body)
+```
+
+Note that the `##` at the end of each line is an empty comment. In VTL this has the effect of stripping the newline from the end of the line (as it is commented out), which makes API Gateway read all the lines in the template as one line.
+
+Be careful when mixing additional `requestParameters` into your SQS endpoint as you may overwrite the `integration.request.header.Content-Type` and stop the request template from being parsed correctly. You may also unintentionally create conflicts between parameters passed using `requestParameters` and those in your request template. Typically you should only use the request template if you need to manipulate the incoming request body in some way.
+
+Your custom template must also set the `Action` and `MessageBody` parameters, as these will not be added for you by the plugin.
 
 #### SNS
 
