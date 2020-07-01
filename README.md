@@ -13,6 +13,7 @@ This Serverless Framework plugin supports the AWS service proxy integration feat
   - [Kinesis](#kinesis)
   - [SQS](#sqs)
     - [Customizing request parameters](#customizing-request-parameters)
+    - [Customizing responses](#customizing-responses)
   - [S3](#s3)
     - [Customizing request parameters](#customizing-request-parameters-1)
     - [Customize the Path Override in API Gateway](#customize-the-path-override-in-api-gateway)
@@ -154,6 +155,57 @@ custom:
           'integration.request.querystring.MessageAttribute.2.Value.StringValue': 'context.identity.cognitoAuthenticationProvider'
           'integration.request.querystring.MessageAttribute.2.Value.DataType': "'String'"
 ```
+
+#### Customizing responses
+
+##### Simplified response template customization
+
+You can get a simple customization of the responses by providing a template for the possible responses. The template is assumed to be `application/json`.
+
+```yml
+custom:
+  apiGatewayServiceProxies:
+    - sqs:
+        path: /queue
+        method: post
+        queueName: !GetAtt MyQueue.QueueName
+        cors: true
+        response:
+          template:
+            # `success` is used when the integration response is 200
+            success: |-
+              { "message: "accepted" }
+            # `clientError` is used when the integration response is 400
+            clientError: |-
+              { "message": "there is an error in your request" }
+            # `serverError` is used when the integration response is 500
+            serverError: |-
+              { "message": "there was an error handling your request" }
+```
+
+##### Full response customization
+
+If you want more control over the integration response, you can
+provide an array of objects for the `response` value:
+
+```yml
+custom:
+  apiGatewayServiceProxies:
+    - sqs:
+        path: /queue
+        method: post
+        queueName: !GetAtt MyQueue.QueueName
+        cors: true
+        response:
+          - statusCode: 200
+            selectionPattern: '2\\d{2}'
+            responseParameters: {}
+            responseTemplates:
+              application/json: |-
+                { "message": "accepted" }
+```
+
+The object keys correspond to the API Gateway [integration response](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apitgateway-method-integration-integrationresponse.html#cfn-apigateway-method-integration-integrationresponse-responseparameters) object.
 
 ### S3
 
