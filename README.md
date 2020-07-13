@@ -157,6 +157,8 @@ custom:
           'integration.request.querystring.MessageAttribute.2.Value.DataType': "'String'"
 ```
 
+The preferred way to pass `MessageAttribute` parameters is via a request body mapping template. Any `requestParameters` keys that begin with `integration.request.querystring.` will be automatically placed in the request body to maintain backward compatibility with existing implementations.
+
 #### Customizing request body mapping templates
 
 See the [SQS section](#sqs-1) under [Customizing request body mapping templates](#customizing-request-body-mapping-templates)
