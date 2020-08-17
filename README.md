@@ -157,7 +157,7 @@ custom:
           'integration.request.querystring.MessageAttribute.2.Value.DataType': "'String'"
 ```
 
-The preferred way to pass `MessageAttribute` parameters is via a request body mapping template. Any `requestParameters` keys that begin with `integration.request.querystring.` will be automatically placed in the request body to maintain backward compatibility with existing implementations.
+The alternative way to pass `MessageAttribute` parameters is via a request body mapping template.
 
 #### Customizing request body mapping templates
 
@@ -714,7 +714,7 @@ Source: [How to connect SNS to Kinesis for cross-account delivery via API Gatewa
 
 #### SQS
 
-Customizing SQS request templates requires us to force all requests to use an `application/x-www-form-urlencoded` style body. The plugin sets the `Content-Type` to `application/x-www-form-urlencoded` for you, but API Gateway will still look for the template under the `application/json` request template type, so that is where you need to configure you request body in `serverless.yml`:
+Customizing SQS request templates requires us to force all requests to use an `application/x-www-form-urlencoded` style body. The plugin sets the `Content-Type` header to `application/x-www-form-urlencoded` for you, but API Gateway will still look for the template under the `application/json` request template type, so that is where you need to configure you request body in `serverless.yml`:
 
 ```yml
 custom:
@@ -741,6 +741,8 @@ Note that the `##` at the end of each line is an empty comment. In VTL this has 
 Be careful when mixing additional `requestParameters` into your SQS endpoint as you may overwrite the `integration.request.header.Content-Type` and stop the request template from being parsed correctly. You may also unintentionally create conflicts between parameters passed using `requestParameters` and those in your request template. Typically you should only use the request template if you need to manipulate the incoming request body in some way.
 
 Your custom template must also set the `Action` and `MessageBody` parameters, as these will not be added for you by the plugin.
+
+When using a custom request body, headers sent by a client will no longer be passed through to the SQS queue (`PassthroughBehavior` is automatically set to `NEVER`). You will need to pass through headers sent by the client explicitly in the request body. Also, any custom querystring parameters in the `requestParameters` array will be ignored. These also need to be added via the custom request body.
 
 #### SNS
 
