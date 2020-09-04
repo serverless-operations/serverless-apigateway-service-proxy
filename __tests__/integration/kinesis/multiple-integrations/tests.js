@@ -96,4 +96,44 @@ describe('Multiple Kinesis Proxy Integrations Test', () => {
     expect(body).to.have.own.property('ShardId')
     expect(body).to.have.own.property('SequenceNumber')
   })
+
+  it('should get correct response from kinesis proxy endpoints with action "PutRecord" with default partitionkey', async () => {
+    const stream = 'kinesis6'
+    const testEndpoint = `${endpoint}/${stream}`
+    const response = await fetch(testEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: `data for stream ${stream}` })
+    })
+    expect(response.headers.get('access-control-allow-origin')).to.deep.equal('*')
+    expect(response.status).to.be.equal(200)
+    const body = await response.json()
+    expect(body).to.have.own.property('ShardId')
+    expect(body).to.have.own.property('SequenceNumber')
+  })
+
+  it('should get correct response from kinesis proxy endpoints with action "PutRecords" with default partitionkey', async () => {
+    const stream = 'kinesis7'
+    const testEndpoint = `${endpoint}/${stream}`
+    const response = await fetch(testEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        records: [
+          { data: 'some data', 'partition-key': 'some key' },
+          { data: 'some other data', 'partition-key': 'some key' }
+        ]
+      })
+    })
+    expect(response.headers.get('access-control-allow-origin')).to.deep.equal('*')
+    expect(response.status).to.be.equal(200)
+    const body = await response.json()
+    expect(body).to.have.own.property('FailedRecordCount')
+    expect(body).to.have.own.property('Records')
+    expect(body.Records.length).to.be.equal(2)
+    expect(body.Records[0]).to.have.own.property('ShardId')
+    expect(body.Records[0]).to.have.own.property('SequenceNumber')
+    expect(body.Records[1]).to.have.own.property('ShardId')
+    expect(body.Records[1]).to.have.own.property('SequenceNumber')
+  })
 })

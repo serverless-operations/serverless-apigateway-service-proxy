@@ -43,6 +43,18 @@ custom:
           queryStringParam: myKey # use query string param
         streamName: { Ref: 'YourStream' }
         cors: true
+    - kinesis:
+        path: /kinesis6
+        action: PutRecord
+        method: post
+        streamName: { Ref: 'YourStream' }
+        cors: true
+    - kinesis:
+        path: /kinesis7
+        action: PutRecords
+        method: post
+        streamName: { Ref: 'YourStream' }
+        cors: true
 
 resources:
   Resources:
