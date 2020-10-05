@@ -19,6 +19,7 @@ This Serverless Framework plugin supports the AWS service proxy integration feat
     - [Customize the Path Override in API Gateway](#customize-the-path-override-in-api-gateway)
       - [Can use greedy, for deeper Folders](#can-use-greedy--for-deeper-folders)
   - [SNS](#sns)
+    - [Customizing responses](#customizing-responses-1)
   - [DynamoDB](#dynamodb)
   - [EventBridge](#eventbridge)
 - [Common API Gateway features](#common-api-gateway-features)
@@ -371,7 +372,6 @@ Sample request after deploying.
 ```bash
 curl https://xxxxxx.execute-api.us-east-1.amazonaws.com/dev/sns -d '{"message": "testtest"}' -H 'Content-Type:application/json'
 ```
-
 
 #### Customizing responses
 
