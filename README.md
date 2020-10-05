@@ -415,7 +415,7 @@ custom:
         cors: true
         response:
           - statusCode: 200
-            selectionPattern: '2\\d{2}'
+            selectionPattern: '2\d{2}'
             responseParameters: {}
             responseTemplates:
               application/json: |-
