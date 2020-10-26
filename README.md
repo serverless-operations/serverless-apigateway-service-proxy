@@ -19,6 +19,7 @@ This Serverless Framework plugin supports the AWS service proxy integration feat
     - [Customize the Path Override in API Gateway](#customize-the-path-override-in-api-gateway)
       - [Can use greedy, for deeper Folders](#can-use-greedy--for-deeper-folders)
   - [SNS](#sns)
+    - [Customizing responses](#customizing-responses-1)
   - [DynamoDB](#dynamodb)
   - [EventBridge](#eventbridge)
 - [Common API Gateway features](#common-api-gateway-features)
@@ -371,6 +372,57 @@ Sample request after deploying.
 ```bash
 curl https://xxxxxx.execute-api.us-east-1.amazonaws.com/dev/sns -d '{"message": "testtest"}' -H 'Content-Type:application/json'
 ```
+
+#### Customizing responses
+
+##### Simplified response template customization
+
+You can get a simple customization of the responses by providing a template for the possible responses. The template is assumed to be `application/json`.
+
+```yml
+custom:
+  apiGatewayServiceProxies:
+    - sns:
+        path: /sns
+        method: post
+        topicName: { 'Fn::GetAtt': ['SNSTopic', 'TopicName'] }
+        cors: true
+        response:
+          template:
+            # `success` is used when the integration response is 200
+            success: |-
+              { "message: "accepted" }
+            # `clientError` is used when the integration response is 400
+            clientError: |-
+              { "message": "there is an error in your request" }
+            # `serverError` is used when the integration response is 500
+            serverError: |-
+              { "message": "there was an error handling your request" }
+```
+
+##### Full response customization
+
+If you want more control over the integration response, you can
+provide an array of objects for the `response` value:
+
+```yml
+custom:
+  apiGatewayServiceProxies:
+    - sns:
+        path: /sns
+        method: post
+        topicName: { 'Fn::GetAtt': ['SNSTopic', 'TopicName'] }
+        cors: true
+        response:
+          - statusCode: 200
+            selectionPattern: '2\d{2}'
+            responseParameters: {}
+            responseTemplates:
+              application/json: |-
+                { "message": "accepted" }
+```
+
+The object keys correspond to the API Gateway [integration response](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apitgateway-method-integration-integrationresponse.html#cfn-apigateway-method-integration-integrationresponse-responseparameters) object.
 
 ### DynamoDB
 
