@@ -3,6 +3,8 @@ language: node_js
 matrix:
   include:
     - node_js: '8.9'
+      env:
+        - INTEGRATION_TESTS=false
     - node_js: '10.6'
       env:
         - INTEGRATION_TESTS=true
@@ -19,7 +21,7 @@ install:
 script:
   - if [[ -z "$DISABLE_TESTS" ]]; then npm run test; fi
   - if [[ ! -z "$DISABLE_TESTS" && ! -z "$LINTING" ]]; then npm run lint; fi
-  - if [[ ! -z "$INTEGRATION_TESTS" && $TRAVIS_BRANCH == "master" && $TRAVIS_PULL_REQUEST == "false" ]]; then npm run integration-test; fi
+  - if [[ ! -z "$INTEGRATION_TESTS" ]]; then npm run integration-test; fi
 
 after_success:
   - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
