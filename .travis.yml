@@ -19,7 +19,7 @@ install:
 
 script:
   - if [[ -z "$DISABLE_UNIT_TESTS" ]]; then npm run test; fi
-  - if [[ ! -z "$DISABLE_TESTS" && ! -z "$LINTING" ]]; then npm run lint; fi
+  - if [[ ! -z "$LINTING" ]]; then npm run lint; fi
   - if [[ -z "$DISABLE_INTEGRATION_TESTS" ]]; then npm run integration-test; fi
 
 after_success:
