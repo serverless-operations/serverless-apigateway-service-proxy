@@ -27,7 +27,7 @@
     "@hapi/joi": "^15.1.0"
   },
   "peerDependencies": {
-    "serverless": "^2.69.1"
+    "serverless": "^3.0.0"
   },
   "jest": {
     "setupFilesAfterEnv": [
