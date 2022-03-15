@@ -427,6 +427,24 @@ custom:
 
 The object keys correspond to the API Gateway [integration response](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apitgateway-method-integration-integrationresponse.html#cfn-apigateway-method-integration-integrationresponse-responseparameters) object.
 
+##### Content Handling and Pass Through Behaviour customization
+
+If you want to work with binary fata, you can not specify `contentHandling` and `PassThrough` inside the `request` object.  
+
+```yml
+custom:
+  apiGatewayServiceProxies:
+    - sns:
+        path: /sns
+        method: post
+        topicName: { 'Fn::GetAtt': ['SNSTopic', 'TopicName'] }
+        request:
+          contentHandling: CONVERT_TO_TEXT
+          passThrough: WHEN_NO_TEMPLATES
+```
+
+The allowed values correspond with the API Gateway Method integration for [ContentHandling](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apitgateway-method-integration.html#cfn-apigateway-method-integration-contenthandling) and [PassthroughBehavior](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apitgateway-method-integration.html#cfn-apigateway-method-integration-passthroughbehavior)
+
 ### DynamoDB
 
 Sample syntax for DynamoDB proxy in `serverless.yml`. Currently, the supported [DynamoDB Operations](https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Operations.html) are `PutItem`, `GetItem` and `DeleteItem`.
