@@ -21,7 +21,9 @@ jobs:
       - run: npm install
       - run: npm run lint
       - run: npm run test -- --coverageDirectory coverage/unit_tests
-      - run: npm run integration-test -- --coverageDirectory coverage/integration_tests
+      - name: integration-test
+        if: ${{ github.actor != 'dependabot[bot]' }}
+        run: npm run integration-test -- --coverageDirectory coverage/integration_tests
         env:
           AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
           AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
