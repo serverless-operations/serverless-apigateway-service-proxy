@@ -19,6 +19,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-sls-
       - run: npm install
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
       - run: npm run lint
       - run: npm run test
       - name: integration-test
