@@ -15,14 +15,12 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-sls-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-sls-
+            ${{ runner.os }}-node-
       - run: npm install
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
       - run: npm run lint
-      - run: npm run test
+      - run: npm run coverage
       - name: integration-test
         if: ${{ github.actor != 'dependabot[bot]' }}
         run: npm run integration-test -- --coverageDirectory coverage/integration_tests
