@@ -1,4 +1,4 @@
-name: CI
+name: PULL REQUEST
 on:
   pull_request_target:
     types: [labeled]
