@@ -20,7 +20,7 @@ jobs:
             ${{ runner.os }}-sls-
       - run: npm install
       - run: npm run lint
-      - run: npm run coverage
+      - run: npm run test
       - name: integration-test
         if: ${{ github.actor != 'dependabot[bot]' }}
         run: npm run integration-test -- --coverageDirectory coverage/integration_tests
