@@ -1,10 +1,12 @@
 name: CI
-
-on: [ push, pull_request ]
+'on':
+  pull_request_target:
+    types: [labeled]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'ok to test')
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v2
