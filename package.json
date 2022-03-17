@@ -1,6 +1,6 @@
 {
   "name": "serverless-apigateway-service-proxy",
-  "version": "1.5.0",
+  "version": "1.15.0",
   "description": "The Serverless Framewrok plugin for supporting AWS service proxy integration of API Gateway",
   "main": "lib/index.js",
   "scripts": {
