@@ -64,4 +64,4 @@ resources:
     YourBus:
       Type: AWS::Events::EventBus
       Properties:
-        Name: YourEventBus-${self:provider.stage}-multi
+        Name: YourEventBus-${sls:stage}-multi
