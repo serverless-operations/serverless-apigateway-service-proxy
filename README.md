@@ -19,10 +19,12 @@ This Serverless Framework plugin supports the AWS service proxy integration feat
     - [Customizing responses](#customizing-responses)
   - [S3](#s3)
     - [Customizing request parameters](#customizing-request-parameters-1)
+    - [Customizing request templates](#customizing-request-templates)
     - [Customize the Path Override in API Gateway](#customize-the-path-override-in-api-gateway)
       - [Can use greedy, for deeper Folders](#can-use-greedy--for-deeper-folders)
-  - [SNS](#sns)
     - [Customizing responses](#customizing-responses-1)
+  - [SNS](#sns)
+    - [Customizing responses](#customizing-responses-2)
   - [DynamoDB](#dynamodb)
   - [EventBridge](#eventbridge)
 - [Common API Gateway features](#common-api-gateway-features)
@@ -293,6 +295,29 @@ custom:
           'integration.request.header.cache-control': "'public, max-age=31536000, immutable'"
 ```
 
+#### Customizing request templates
+
+If you'd like use custom [API Gateway request templates](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-override-request-response-parameters.html), you can do so like so:
+
+```yml
+custom:
+  apiGatewayServiceProxies:
+    - s3:
+        path: /s3
+        method: get
+        action: GetObject
+        bucket:
+          Ref: S3Bucket
+        request:
+          template:
+            application/json: |
+              #set ($specialStuff = $context.request.header.x-special)
+              #set ($context.requestOverride.path.object = $specialStuff.replaceAll('_', '-'))
+              {}
+```
+
+Note that if the client does not provide a `Content-Type` header in the request, [ApiGateway defaults to `application/json`](https://docs.aws.amazon.com/apigateway/latest/developerguide/integration-passthrough-behaviors.html).
+
 #### Customize the Path Override in API Gateway
 
 Added the new customization parameter that lets the user set a custom Path Override in API Gateway other than the `{bucket}/{object}`
@@ -350,6 +375,33 @@ custom:
 ```
 
 This will translate for example `/s3/a/b/c` to `a/b/c.xml`
+
+#### Customizing responses
+
+You can get a simple customization of the responses by providing a template for the possible responses. The template is assumed to be `application/json`.
+
+```yml
+custom:
+  apiGatewayServiceProxies:
+    - s3:
+        path: /s3
+        method: post
+        action: PutObject
+        bucket:
+          Ref: S3Bucket
+        key: static-key.json
+        response:
+          template:
+            # `success` is used when the integration response is 200
+            success: |-
+              { "message: "accepted" }
+            # `clientError` is used when the integration response is 400
+            clientError: |-
+              { "message": "there is an error in your request" }
+            # `serverError` is used when the integration response is 500
+            serverError: |-
+              { "message": "there was an error handling your request" }
+```
 
 ### SNS
 
