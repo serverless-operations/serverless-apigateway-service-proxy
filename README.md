@@ -524,8 +524,9 @@ custom:
         hashKey:
           queryStringParam: id # use query string parameter
           attributeType: S
-        rangeKey:
-          queryStringParam: sort
+        rangeKey: # use static value for sort key
+          name: sort
+          value: 'static-sort-key-value'
           attributeType: S
         action: GetItem
         cors: true
