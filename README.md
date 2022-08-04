@@ -26,6 +26,7 @@ This Serverless Framework plugin supports the AWS service proxy integration feat
   - [SNS](#sns)
     - [Customizing responses](#customizing-responses-2)
   - [DynamoDB](#dynamodb)
+    - [Customizing responses](#customizing-responses-3)
   - [EventBridge](#eventbridge)
 - [Common API Gateway features](#common-api-gateway-features)
   - [Enabling CORS](#enabling-cors)
@@ -446,7 +447,7 @@ custom:
           template:
             # `success` is used when the integration response is 200
             success: |-
-              { "message: "accepted" }
+              { "message": "accepted" }
             # `clientError` is used when the integration response is 400
             clientError: |-
               { "message": "there is an error in your request" }
@@ -568,6 +569,40 @@ curl -XPUT https://xxxxxxx.execute-api.us-east-1.amazonaws.com/dev/dynamodb/<has
  -H 'Content-Type:application/json'
 ```
 
+#### Customizing responses
+
+##### Simplified response template customization
+
+You can get a simple customization of the responses by providing a template for the possible responses. The template returns the same kind of response for both `application/json` and `application/x-www-form-urlendcoded`.
+
+```yml
+custom:
+  apiGatewayServiceProxies:
+    - dynamodb:
+        path: /dynamodb
+        method: get
+        tableName: { Ref: 'YourTable' }
+        hashKey:
+          queryStringParam: id # use query string parameter
+          attributeType: S
+        rangeKey:
+          queryStringParam: sort
+          attributeType: S
+        action: GetItem
+        cors: true
+        response:
+          template:
+            # `success` is used when the integration response is 200
+            success: |-
+              #set($item = $input.path('$.Item'))
+              { "Item": $item }
+            # `clientError` is used when the integration response is 400
+            clientError: |-
+              { "message": "there is an error in your request" }
+            # `serverError` is used when the integration response is 500
+            serverError: |-
+              { "message": "there was an error handling your request" }
+```
 
 ### EventBridge
 
