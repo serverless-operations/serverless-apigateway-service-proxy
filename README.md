@@ -594,14 +594,43 @@ custom:
           template:
             # `success` is used when the integration response is 200
             success: |-
-              #set($item = $input.path('$.Item'))
-              { "Item": $item }
+              #set($item = $input.path('$.Item')){ "Item": $item }
             # `clientError` is used when the integration response is 400
             clientError: |-
               { "message": "there is an error in your request" }
             # `serverError` is used when the integration response is 500
             serverError: |-
               { "message": "there was an error handling your request" }
+```
+
+##### Full response customization
+
+If you want more control over the integration response, you can
+provide an array of objects for the `response` value:
+
+```yml
+custom:
+  apiGatewayServiceProxies:
+    - dynamodb:
+        path: /dynamodb
+        method: get
+        tableName: { Ref: 'YourTable' }
+        hashKey:
+          queryStringParam: id # use query string parameter
+          attributeType: S
+        rangeKey:
+          queryStringParam: sort
+          attributeType: S
+        action: GetItem
+        cors: true
+        response:
+          - statusCode: 200
+            selectionPattern: '2\\d{2}'
+            responseParameters: {}
+            responseTemplates:
+              application/json: |-
+                #set($item = $input.path('$.Item')){ "Item": $item }
+
 ```
 
 ### EventBridge
