@@ -38,7 +38,7 @@
   "author": "horike37",
   "license": "MIT",
   "devDependencies": {
-    "@commitlint/cli": "^8.1.0",
+    "@commitlint/cli": "^17.1.2",
     "@commitlint/config-conventional": "^8.1.0",
     "aws-sdk": "^2.496.0",
     "aws-testing-library": "^1.0.8",
