@@ -23,6 +23,7 @@ This Serverless Framework plugin supports the AWS service proxy integration feat
     - [Customize the Path Override in API Gateway](#customize-the-path-override-in-api-gateway)
       - [Can use greedy, for deeper Folders](#can-use-greedy--for-deeper-folders)
     - [Customizing responses](#customizing-responses-1)
+    - [Allow Bindary Types](#allow-binary-type)
   - [SNS](#sns)
     - [Customizing responses](#customizing-responses-2)
   - [DynamoDB](#dynamodb)
@@ -403,7 +404,18 @@ custom:
             serverError: |-
               { "message": "there was an error handling your request" }
 ```
+#### Allow Binary Type
 
+In order to allow the browser to recognize binary type (e.g. images), add the following. 
+
+This would impact Rest API [settings](https://github.com/serverless/serverless/blob/main/lib/plugins/aws/package/compile/events/api-gateway/lib/rest-api.js#8,21) which is [called](https://github.com/serverless-operations/serverless-apigateway-service-proxy/blob/9f41894cd2e458263d3128116aa6af19ec2b333b/lib/index.js#7,81) by our plugin
+
+```yml
+#provider.apiGateway.binaryMediaTypes
+provider:
+  apiGateway:
+    binaryMediaTypes: "*/*"
+```
 ### SNS
 
 Sample syntax for SNS proxy in `serverless.yml`.
