@@ -44,3 +44,4 @@ tmpdirs-serverless
 .eslintcache
 .serverless
 .vscode
+test-service/*
