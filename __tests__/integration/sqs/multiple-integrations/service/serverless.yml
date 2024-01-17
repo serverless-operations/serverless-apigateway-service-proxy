@@ -2,7 +2,7 @@ service: multiple-sqs-proxy
 
 provider:
   name: aws
-  runtime: nodejs10.x
+  runtime: nodejs20.x
 
 plugins:
   localPath: './../../../../../../'

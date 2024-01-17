@@ -2,7 +2,7 @@ service: custom-role-proxy
 
 provider:
   name: aws
-  runtime: nodejs10.x
+  runtime: nodejs0.x
 
 plugins:
   localPath: './../../../../../../'
