@@ -195,7 +195,7 @@ custom:
           template:
             # `success` is used when the integration response is 200
             success: |-
-              { "message: "accepted" }
+              { "message": "accepted" }
             # `clientError` is used when the integration response is 400
             clientError: |-
               { "message": "there is an error in your request" }
@@ -396,7 +396,7 @@ custom:
           template:
             # `success` is used when the integration response is 200
             success: |-
-              { "message: "accepted" }
+              { "message": "accepted" }
             # `clientError` is used when the integration response is 400
             clientError: |-
               { "message": "there is an error in your request" }
