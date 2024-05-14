@@ -38,6 +38,20 @@ custom:
           attributeType: S
         cors: true
     - dynamodb:
+        path: /dynamodb/index/{indexRange}/{indexSort}
+        method: get
+        indexName: myTestIndex
+        tableName:
+          Ref: MyMuTestTable
+        action: Query
+        hashKey:
+          pathParam: indexSort
+          attributeType: S
+        rangeKey:
+          pathParam: indexRange
+          attributeType: S
+        cors: true
+    - dynamodb:
         path: /dynamodb/{id}
         method: delete
         tableName:
@@ -62,11 +76,27 @@ resources:
             AttributeType: S
           - AttributeName: sort
             AttributeType: S
+          - AttributeName: indexRange
+            AttributeType: S
+          - AttributeName: indexSort
+            AttributeType: S
         KeySchema:
           - AttributeName: id
             KeyType: HASH
           - AttributeName: sort
             KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: myTestIndex
+            KeySchema:
+              - AttributeName: indexSort
+                KeyType: HASH
+              - AttributeName: indexRange
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
