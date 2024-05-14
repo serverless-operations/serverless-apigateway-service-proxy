@@ -543,6 +543,19 @@ custom:
         action: GetItem
         cors: true
     - dynamodb:
+        path: /dynamodb
+        method: get
+        tableName: { Ref: 'YourTable' }
+        indexName: 'myIndex'
+        hashKey:
+          queryStringParam: id # use query string parameter
+          attributeType: S
+        rangeKey:
+          queryStringParam: sort
+          attributeType: S
+        action: Query
+        cors: true
+    - dynamodb:
         path: /dynamodb/{id}
         method: delete
         tableName: { Ref: 'YourTable' }
@@ -644,6 +657,35 @@ custom:
                 #set($item = $input.path('$.Item')){ "Item": $item }
 
 ```
+#### Using Query with Index(GSI)
+If you want to use GSI to get some information, you must use the Query action and add the attribute "indexName"
+with the name of the Index that you want to use.
+When you use it, the action on Dynamo will transform in Query action and it will use the HashKey and, if provided, the RangeKey to create the query unsing the equal operator.
+
+You can change the operator for other allowed by AWS, just add the attribute "queryOperator" to the specific
+key (Rash or Hange) information:
+
+```yaml
+  - dynamodb:
+      path: /dynamodb
+      method: query
+      tableName: { Ref: 'YourTable' }
+      indexName: 'myIndex'
+      hashKey:
+        queryStringParam: id # use query string parameter
+        attributeType: S
+        queryOperator: ">"
+      rangeKey:
+        queryStringParam: sort
+        attributeType: S
+        queryOperator: "<"
+      action: Query
+      cors: true
+
+```
+
+If used some reponse template customazitaion, be aware that the response is different from the GetItem
+returning an array containing the atributte Items
 
 ### EventBridge
 
