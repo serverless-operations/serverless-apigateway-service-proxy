@@ -28,7 +28,7 @@
     "common-tags": "^1.8.0"
   },
   "peerDependencies": {
-    "serverless": "3"
+    "serverless": ">=3"
   },
   "jest": {
     "setupFilesAfterEnv": [
