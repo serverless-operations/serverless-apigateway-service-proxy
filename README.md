@@ -21,9 +21,9 @@ This Serverless Framework plugin supports the AWS service proxy integration feat
     - [Customizing request parameters](#customizing-request-parameters-1)
     - [Customizing request templates](#customizing-request-templates)
     - [Customize the Path Override in API Gateway](#customize-the-path-override-in-api-gateway)
-      - [Can use greedy, for deeper Folders](#can-use-greedy--for-deeper-folders)
+      - [Can use greedy, for deeper Folders](#can-use-greedy-for-deeper-folders)
     - [Customizing responses](#customizing-responses-1)
-    - [Allow Bindary Types](#allow-binary-type)
+    - [Allow Binary Types](#allow-binary-type)
   - [SNS](#sns)
     - [Customizing responses](#customizing-responses-2)
   - [DynamoDB](#dynamodb)
@@ -51,7 +51,7 @@ serverless plugin install -n serverless-apigateway-service-proxy
 ## Supported AWS services
 
 Here is a services list which this plugin supports for now. But will expand to other services in the feature.
-Please pull request if you are intersted in it.
+Please pull request if you are interested in it.
 
 - Kinesis Streams
 - SQS
@@ -351,11 +351,11 @@ custom:
 ```
 
 This will result in API Gateway setting the Path Override attribute to `{bucket}/{folder}/{file}.xml`
-So for example if you navigate to the API Gatway endpoint `/language/en` it will fetch the file in S3 from `{bucket}/language/en.xml`
+So for example if you navigate to the API Gateway endpoint `/language/en` it will fetch the file in S3 from `{bucket}/language/en.xml`
 
 ##### Can use greedy, for deeper Folders
 
-The forementioned example can also be shortened by a greedy approach. Thanks to @taylorreece for mentioning this.
+The aforementioned example can also be shortened by a greedy approach. Thanks to @taylorreece for mentioning this.
 
 ```yaml
 custom:
