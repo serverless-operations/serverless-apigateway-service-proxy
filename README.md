@@ -551,6 +551,20 @@ custom:
           attributeType: S
         action: DeleteItem
         cors: true
+    - dynamodb:
+        path: /dynamodb/{id}
+        method: get
+        tableName: { Ref: 'YourTable' }
+        hashKey:
+          keyName: id # Name of the attribute in the DynamoDB table
+          attributeValue: \${input.params().path.id1}_\${input.params().querystring.id2} # Custom mapping for the attribute. Use '\${}' to escape the '$' character.
+          attributeType: S
+        rangeKey:
+          keyName: range # Name of the attribute in the DynamoDB table
+          attributeValue: \${input.params().path.range1}_\${input.params().querystring.range2} # Custom mapping for the attribute. Use '\${}' to escape the '$' character.
+          attributeType: S
+        action: GetItem
+        cors: true
 
 resources:
   Resources:
