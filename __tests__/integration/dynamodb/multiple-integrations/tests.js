@@ -89,6 +89,40 @@ describe('Multiple Dynamodb Proxies Integration Test', () => {
     })
   })
 
+  it('should get correct response from dynamodb Query with index', async () => {
+    await putDynamodbItem(
+      tableName,
+      _.merge(
+        {},
+        { [hashKeyAttribute]: hashKey, [rangeKeyAttribute]: sortKey },
+        {
+          message: { S: 'testtest' },
+          indexRange: { S: 'rangeTest' },
+          indexSort: { S: 'sortTest' }
+        }
+      )
+    )
+    const getEndpoint = `${endpoint}/dynamodb/index/rangeTest/sortTest`
+
+    const getResponse = await fetch(getEndpoint, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    })
+    expect(getResponse.headers.get('access-control-allow-origin')).to.deep.equal('*')
+    expect(getResponse.status).to.be.equal(200)
+
+    const item = await getResponse.json()
+    expect(item).to.be.deep.equal([
+      {
+        id: hashKey.S,
+        sort: sortKey.S,
+        message: 'testtest',
+        indexRange: 'rangeTest',
+        indexSort: 'sortTest'
+      }
+    ])
+  })
+
   it('should get correct response from dynamodb DeleteItem action endpoint', async () => {
     await putDynamodbItem(
       tableName,
